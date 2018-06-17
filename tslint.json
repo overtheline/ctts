@@ -1,0 +1,26 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-react",
+    "tslint-eslint-rules",
+  ],
+  "jsRules": {},
+  "rules": {
+    "indent": [true, "tabs", 2],
+    "member-access": [true, "no-public"],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": {
+          "arrays": "always",
+          "functions": "never",
+          "objects": "always"
+        }
+      }
+    ],
+    "quotemark": [true, "single", "jsx-double"],
+    "no-console": false
+  },
+  "rulesDirectory": []
+}
