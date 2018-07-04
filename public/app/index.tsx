@@ -4,6 +4,6 @@ import * as ReactDOM from 'react-dom';
 import App from './app';
 
 ReactDOM.render(
-  <App title={'CTTS App'} />,
-  document.getElementById('page')
+	<App title={'CTTS App'} />,
+	document.getElementById('page')
 );
