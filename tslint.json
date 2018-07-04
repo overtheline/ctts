@@ -3,7 +3,7 @@
   "extends": [
     "tslint:recommended",
     "tslint-react",
-    "tslint-eslint-rules",
+    "tslint-eslint-rules"
   ],
   "jsRules": {},
   "rules": {
