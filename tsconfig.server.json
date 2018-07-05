@@ -1,7 +1,7 @@
 {
 	"extends": "./tsconfig",
   "compilerOptions": {
-    "outDir": "./dist/server"
+    "outDir": "./dist"
   },
   "files": [
     "./server/index.ts"
