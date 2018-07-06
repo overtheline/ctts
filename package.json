@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "server": "nodemon ./dist/server/index.js",
-    "tsc": "tsc --project tsconfig.server.json",
-    "build": "NODE_ENV=development node_modules/.bin/webpack --colors --config webpack.config.dev.js",
+    "tsc": "tsc --project tsconfig.server.json --watch",
+    "build": "NODE_ENV=development node_modules/.bin/webpack --colors --config webpack.config.dev.js --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
