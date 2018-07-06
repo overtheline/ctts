@@ -32,6 +32,7 @@ export default class App extends React.Component<IProps, IState> {
 			'handleTextChange',
 			'handlePredict',
 			'handleGetData',
+			'handleGetQuotes',
 		]);
 	}
 
@@ -85,6 +86,16 @@ export default class App extends React.Component<IProps, IState> {
 		});
 	}
 
+	handleGetQuotes() {
+		return fetch('/data/words')
+		.then((res) => {
+			return res.json();
+		})
+		.then((json) => {
+			console.log(json);
+		});
+	}
+
 	renderIrisChart() {
 		return (
 			<div id="iris-chart" />
@@ -119,6 +130,9 @@ export default class App extends React.Component<IProps, IState> {
 						</label>
 						<input type="submit" value="Submit" />
 					</form>
+					<div>
+						<input type="button" value="get quotes" onClick={this.handleGetQuotes}/>
+					</div>
 				</section>
 			</div>
 		);
