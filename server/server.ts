@@ -9,6 +9,10 @@ import {
 	ITestIrisDatum,
 } from '../types';
 import {
+	connectToDb,
+	getQuotes,
+} from './database';
+import {
 	getData,
 	predict,
 	runTrain,
@@ -33,19 +37,15 @@ class App {
 		this.app.use('/', express.static(path.join(__dirname, '../public')));
 		this.app.use('/data', this.dataRouter);
 
-		runTrain();
+		connectToDb().then(() => {
+			runTrain();
+		}, (err) => { console.log('connectToDb error', err); });
 	}
 
 	private mountRoutes(): void {
-		this.dataRouter.get('/words', (req, res) => {
-			console.log('words');
-			res.json({
-				foo: 'bar',
-			});
-		});
+		this.dataRouter.get('/words', getQuotes);
 
 		this.dataRouter.get('/quotes', (req, res) => {
-			console.log(req.query.name);
 			res.json(req.query.name);
 		});
 

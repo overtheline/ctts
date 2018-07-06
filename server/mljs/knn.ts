@@ -3,6 +3,7 @@ import * as KNN from 'ml-knn';
 import * as path from 'path';
 
 import { IRawIrisDatum, ITestIrisDatum } from '../../types';
+import { getAllIrisData } from '../database';
 
 let knn: any;
 
@@ -28,14 +29,13 @@ let testSetX: number[][] = [];
 let testSetY: number[] = [];
 
 export function runTrain() {
-	csv({noheader: true, headers: names})
-		.fromFile(csvFilePath)
-		.then((jsonObj) => {
+	getAllIrisData()
+		.then((jsonObj: IRawIrisDatum[]) => {
 			data = jsonObj;
 			separationSize = 0.7 * data.length;
 			data = shuffleArray(data);
 			dressData();
-		});
+		}, (err) => { console.log(err); });
 }
 
 export function getData(): IRawIrisDatum[] {
