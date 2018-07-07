@@ -13,8 +13,10 @@ const margin = {
 	top: 20,
 };
 
-const width = 960 - margin.left - margin.right;
-const height = 500 - margin.top - margin.bottom;
+const CHART_WIDTH = 700;
+
+const width = CHART_WIDTH - margin.left - margin.right;
+const height = CHART_WIDTH * (5 / 8) - margin.top - margin.bottom;
 
 const xScale = d3.scaleLinear().range([0, width]);
 const yScale = d3.scaleLinear().range([height, 0]);
