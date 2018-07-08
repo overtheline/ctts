@@ -8,7 +8,7 @@
   "jsRules": {},
   "rules": {
     "indent": [true, "tabs", 2],
-    "member-access": [true, "no-public"],
+    "member-access": [true],
     "trailing-comma": [
       true,
       {
