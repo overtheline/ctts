@@ -19,7 +19,7 @@ interface IState {
 }
 
 export default class App extends React.Component<IProps, IState> {
-	irisChartRef: React.RefObject<any>;
+	private irisChartRef: React.RefObject<any>;
 
 	constructor(props: IProps) {
 		super(props);
@@ -36,73 +36,82 @@ export default class App extends React.Component<IProps, IState> {
 		]);
 	}
 
-	componentDidMount() {
+	public componentDidMount(): void {
 		fetch('/data/irisData')
-			.then((res) => {
-				return res.json();
-			})
-			.then((json: IRawIrisDatum[]) => {
-				console.log(json);
-				createChart(this.irisChartRef, '#iris-chart', json);
-			});
+			.then(
+				(res) => res.json(),
+				(err) => { console.log(err); }
+			)
+			.then(
+				(json: IRawIrisDatum[]) => { createChart(this.irisChartRef, '#iris-chart', json); },
+				(err) => { console.log(err); }
+			);
 	}
 
-	handleNameChange(event: any) {
+	public handleNameChange(event: any): void {
 		this.setState({ name: event.target.value });
 	}
 
-	handleTextChange(event: any) {
+	public handleTextChange(event: any): void {
 		this.setState({ text: event.target.value });
 	}
 
-	handleSubmit(event: any) {
+	public handleSubmit(event: any): void {
 		event.preventDefault();
-		return fetch(`/data/quotes?name=${this.state.name}&text=${this.state.text}`)
-		.then((res) => {
-			return res.json();
-		})
-		.then((json) => {
-			console.log(json);
-		});
+		fetch(`/data/quotes?name=${this.state.name}&text=${this.state.text}`)
+			.then(
+				(res) => res.json(),
+				(err) => { console.log(err); }
+			)
+			.then(
+				(json) => { console.log(json); },
+				(err) => { console.log(err); }
+			);
 	}
 
-	handlePredict() {
-		return fetch(`/data/predictIris?petalLength=${0.5}&petalWidth=${3.4}&sepalLength=${1.7}&sepalWidth=${2.5}`)
-		.then((res) => {
-			return res.json();
-		})
-		.then((json) => {
-			console.log(json);
-		});
+	public handlePredict(): void {
+		fetch(`/data/predictIris?petalLength=${0.5}&petalWidth=${3.4}&sepalLength=${1.7}&sepalWidth=${2.5}`)
+			.then(
+				(res) => res.json(),
+				(err) => { console.log(err); }
+			)
+			.then(
+				(json) => { console.log(json); },
+				(err) => { console.log(err); }
+			);
 	}
 
-	handleGetData() {
-		return fetch('/data/irisData')
-		.then((res) => {
-			return res.json();
-		})
-		.then((json) => {
-			console.log(json);
-		});
+	public handleGetData(): void {
+		fetch('/data/irisData')
+			.then(
+				(res) => res.json(),
+				(err) => { console.log(err); }
+			)
+			.then(
+				(json) => { console.log(json); },
+				(err) => { console.log(err); }
+			);
 	}
 
-	handleGetQuotes() {
-		return fetch('/data/words')
-		.then((res) => {
-			return res.json();
-		})
-		.then((json) => {
-			console.log(json);
-		});
+	public handleGetQuotes(): void {
+		fetch('/data/words')
+			.then(
+				(res) => res.json(),
+				(err) => { console.log(err); }
+			)
+			.then(
+				(json) => { console.log(json); },
+				(err) => { console.log(err); }
+			);
 	}
 
-	renderIrisChart() {
+	public renderIrisChart(): JSX.Element {
 		return (
 			<div id="iris-chart" />
 		);
 	}
 
-	render() {
+	public render(): JSX.Element {
 		return (
 			<div>
 				<h1>{this.props.title}</h1>
