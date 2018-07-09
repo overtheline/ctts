@@ -11,8 +11,8 @@ import {
 	IRawIrisDatum,
 } from '../../types';
 import {
-	createChart,
- } from './chart/scatter';
+	IrisChart,
+} from './chart/scatter';
 
 interface IProps {
 	title: string;
@@ -24,13 +24,10 @@ interface IState {
 }
 
 export default class App extends React.Component<IProps, IState> {
-	private irisChartRef: React.RefObject<any>;
-	private updateChart: (data: IIrisDatum[]) => void;
+	private irisChart: IrisChart;
 
 	constructor(props: IProps) {
 		super(props);
-
-		this.irisChartRef = React.createRef();
 
 		bindAll(this, [
 			'handleSubmit',
@@ -54,7 +51,8 @@ export default class App extends React.Component<IProps, IState> {
 						json,
 						(datum) => mapValues(datum, (val, key) => key !== 'type' ? Number(val) : val)
 					) as IIrisDatum[];
-					this.updateChart = createChart('#iris-chart', data);
+					this.irisChart = new IrisChart('#iris-chart');
+					this.irisChart.renderChart(data);
 				},
 				(err) => { console.log(err); }
 			);
@@ -94,7 +92,7 @@ export default class App extends React.Component<IProps, IState> {
 						type: prediction.classification,
 					};
 
-					this.updateChart([datum]);
+					this.irisChart.updateChart([datum]);
 				},
 				(err) => { console.log(err); }
 			);

@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import {
+	Dictionary,
 	reduce,
 } from 'lodash';
 
@@ -9,43 +10,67 @@ interface IColorMap {
 	[type: string]: string;
 }
 
-export function createChart(elementId: string, json: IIrisDatum[]): (nextJson: IIrisDatum[]) => void {
-	const colors = d3.schemeCategory10;
-	const types = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica'];
-	const colorMap = reduce<string, IColorMap>(types, (acc, type, index) => {
-		acc[type] = colors[index];
+export class IrisChart {
+	private colors: ReadonlyArray<string> = d3.schemeCategory10;
+	private types: ReadonlyArray<string> = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica'];
+	private colorMap: Dictionary<string> = reduce<string, IColorMap>(this.types, (acc, type, index) => {
+		acc[type] = this.colors[index];
 		return acc;
 	}, {});
-
-	const data: IIrisDatum[] = json;
-	const id: string = elementId;
-
-	const margin = {
+	private margin: Dictionary<number> = {
 		bottom: 100,
 		left: 100,
 		right: 20,
 		top: 20,
 	};
+	private CHART_WIDTH: number = 700;
+	private width: number = this.CHART_WIDTH - this.margin.left - this.margin.right;
+	private height: number = this.CHART_WIDTH * (5 / 8) - this.margin.top - this.margin.bottom;
+	private xScale = d3.scaleLinear().range([0, this.width]);
+	private yScale = d3.scaleLinear().range([this.height, 0]);
+	private xAxis = d3.axisBottom(this.xScale);
+	private yAxis = d3.axisLeft(this.yScale);
+	private id: string;
+	private data: IIrisDatum[] = [];
 
-	const CHART_WIDTH = 700;
+	private svg: d3.Selection<any, any, any, any>;
+	private g: d3.Selection<any, any, any, any>;
 
-	const width = CHART_WIDTH - margin.left - margin.right;
-	const height = CHART_WIDTH * (5 / 8) - margin.top - margin.bottom;
+	constructor(elementId: string) {
+		this.id = elementId;
+	}
 
-	const xScale = d3.scaleLinear().range([0, width]);
-	const yScale = d3.scaleLinear().range([height, 0]);
+	public renderChart(nextJson: IIrisDatum[]): void {
+		const {
+			width,
+			margin,
+			height,
+			id,
+		} = this;
 
-	const xAxis = d3.axisBottom(xScale);
-	const yAxis = d3.axisLeft(yScale);
+		this.svg = d3.select(id).append('svg')
+				.attr('width', width + margin.left + margin.right)
+				.attr('height', height + margin.top + margin.bottom);
 
-	const svg = d3.select(id).append('svg')
-			.attr('width', width + margin.left + margin.right)
-			.attr('height', height + margin.top + margin.bottom);
+		this.g = this.svg.append('g')
+				.attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-	const g = svg.append('g')
-			.attr('transform', `translate(${margin.left}, ${margin.top})`);
+		this.updateChart(nextJson);
+	}
 
-	function updateChart(nextJson: IIrisDatum[]) {
+	public updateChart(nextJson: IIrisDatum[]) {
+		const {
+			data,
+			xScale,
+			xAxis,
+			yScale,
+			yAxis,
+			g,
+			width,
+			height,
+			colorMap,
+		} = this;
+
 		nextJson.forEach((datum) => data.push(datum));
 
 		const sepalWidthsExtent = d3.extent(data, (d) => d.sepalWidth) as [number, number];
@@ -109,8 +134,4 @@ export function createChart(elementId: string, json: IIrisDatum[]): (nextJson: I
 				.attr('cy', (d: IIrisDatum) => yScale(d.sepalLength))
 				.style('fill-opacity', 1);
 	}
-
-	updateChart([]);
-
-	return updateChart;
 }
