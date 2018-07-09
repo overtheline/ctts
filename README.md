@@ -1,3 +1,37 @@
 # ctts
-node experiments
-## develop
+
+Node experiments.
+
+Basic webserver with db.
+
+Data visualization.
+
+K-nearest neighbor.
+
+Iris data.
+
+## Development
+
+Developed in OSX environment. Uses Node JS. VSCode is good.
+
+Commands to start:
+
+To initialize:
+```text
+npm install
+```
+
+To run:
+```text
+npm run mongod
+npm run tsc
+npm run server
+npm run build
+```
+
+## Some requirements
+
+- MongoDB
+- TypeScript
+- React
+- Express
