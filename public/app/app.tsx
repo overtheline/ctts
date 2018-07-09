@@ -1,13 +1,18 @@
 import {
 	bindAll,
+	map,
+	mapValues,
 } from 'lodash';
 import * as React from 'react';
 
+import { values } from '../../node_modules/@types/d3';
 import {
 	IIrisDatum,
 	IRawIrisDatum,
 } from '../../types';
-import { createChart } from './chart/scatter';
+import {
+	createChart,
+ } from './chart/scatter';
 
 interface IProps {
 	title: string;
@@ -20,6 +25,7 @@ interface IState {
 
 export default class App extends React.Component<IProps, IState> {
 	private irisChartRef: React.RefObject<any>;
+	private updateChart: (data: IIrisDatum[]) => void;
 
 	constructor(props: IProps) {
 		super(props);
@@ -43,7 +49,13 @@ export default class App extends React.Component<IProps, IState> {
 				(err) => { console.log(err); }
 			)
 			.then(
-				(json: IRawIrisDatum[]) => { createChart(this.irisChartRef, '#iris-chart', json); },
+				(json: IRawIrisDatum[]) => {
+					const data = map(
+						json,
+						(datum) => mapValues(datum, (val, key) => key !== 'type' ? Number(val) : val)
+					) as IIrisDatum[];
+					this.updateChart = createChart('#iris-chart', data);
+				},
 				(err) => { console.log(err); }
 			);
 	}
@@ -70,13 +82,20 @@ export default class App extends React.Component<IProps, IState> {
 	}
 
 	public handlePredict(): void {
-		fetch(`/data/predictIris?petalLength=${0.5}&petalWidth=${3.4}&sepalLength=${1.7}&sepalWidth=${2.5}`)
+		fetch(`/data/predictIris?petalLength=${0.5}&petalWidth=${3.4}&sepalLength=${4.5}&sepalWidth=${2.5}`)
 			.then(
 				(res) => res.json(),
 				(err) => { console.log(err); }
 			)
 			.then(
-				(json) => { console.log(json); },
+				(prediction) => {
+					const datum = {
+						...prediction.features,
+						type: prediction.classification,
+					};
+
+					this.updateChart([datum]);
+				},
 				(err) => { console.log(err); }
 			);
 	}
