@@ -6,14 +6,34 @@ const WebpackNotifierPlugin = require('webpack-notifier');
 
 module.exports = {
 	mode: 'development',
-	entry: './public/app/index.tsx',
+	entry: {
+		app: './public/app/index.tsx',
+		iris: './public/iris/index.tsx',
+		index: './public/landing/index.tsx',
+	},
 	devtool: 'inline-source-map',
 	plugins: [
 		new CleanWebpackPlugin(['dist/public']),
 		new HtmlWebpackPlugin({
 			title: 'CTTS',
 			inject: 'body',
-      template: 'public/index.html',
+			template: 'public/index.html',
+			chunks: ['app'],
+			filename: 'app.html',
+		}),		
+		new HtmlWebpackPlugin({
+			title: 'CTTS',
+			inject: 'body',
+			template: 'public/index.html',
+			chunks: ['iris'],
+			filename: 'iris.html',
+		}),
+		new HtmlWebpackPlugin({
+			title: 'Landing',
+			inject: 'body',
+			template: 'public/index.html',
+			chunks: ['index'],
+			filename: 'index.html',
 		}),
 		new webpack.DefinePlugin({
       'process.env': {

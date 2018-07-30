@@ -2,89 +2,53 @@ import * as bodyParser from 'body-parser';
 import { Router } from 'express';
 import * as express from 'express';
 import { Application } from 'express-serve-static-core';
-import {
-	map,
-	pick,
-} from 'lodash';
 import * as morgan from 'morgan';
 import * as path from 'path';
-
-import {
-	ITestIrisDatum,
-} from '../types';
-import {
-	connectToDb,
-	getAllIrisData,
-	getQuotes,
-} from './database';
-import {
-	CTTSKNN,
-	IDatum,
-} from './ml/ctts-knn';
+import { IrisDataStore } from './iris-data-store';
 
 class App {
 	public app: Application;
-	private dataRouter: Router;
-	private cttsknn: CTTSKNN;
+	private irisDataStore: IrisDataStore;
+	private irisDataRouter: Router;
+	private quoteDataRouter: Router;
 
 	constructor() {
+		// initialize server app
 		this.app = express();
-		this.dataRouter = Router();
 
-		this.init();
+		// construct new data stores
+		this.irisDataStore = new IrisDataStore();
+
+		// Routers for data
+		this.irisDataRouter = Router();
+		this.quoteDataRouter = Router();
+
+		// setup server
+		this.setup();
 		this.mountRoutes();
 	}
 
-	private init() {
+	private setup() {
 		this.app.use(bodyParser.json());
 		this.app.use(bodyParser.urlencoded({ extended: false }));
 		this.app.use(morgan('combined'));
+
+		// Static Routes
 		this.app.use('/', express.static(path.join(__dirname, '../public')));
-		this.app.use('/data', this.dataRouter);
 
-		connectToDb().then(
-			() => {
-				getAllIrisData().then(
-					(irisData: any[]) => { this.runCTTSKNN(irisData); },
-					(err) => { console.log(err); }
-				);
-			},
-			(err) => { console.log('connectToDb error', err); }
-		);
-	}
-
-	private runCTTSKNN(irisData: any[]) {
-		const irisFeatures = [
-			'sepalLength',
-			'sepalWidth',
-			'petalLength',
-			'petalWidth',
-		];
-
-		const preparedData: IDatum[] = map(irisData, (datum) => {
-			const features = pick(datum, irisFeatures);
-			const classification = datum.type;
-
-			return ({
-				classification,
-				features,
-			});
-		});
-
-		this.cttsknn = new CTTSKNN({
-			data: preparedData,
-			featureKeys: irisFeatures,
-		});
+		// App Data Routes
+		this.app.use('/irisdata', this.irisDataRouter);
+		this.app.use('/quotedata', this.quoteDataRouter);
 	}
 
 	private mountRoutes(): void {
-		this.dataRouter.get('/words', getQuotes);
+		// this.irisDataRouter.get('/words', getQuotes);
 
-		this.dataRouter.get('/quotes', (req, res) => {
-			res.json(req.query.name);
-		});
+		// this.irisDataRouter.get('/quotes', (req, res) => {
+		// 	res.json(req.query.name);
+		// });
 
-		this.dataRouter.get('/predictIris', (req, res) => {
+		this.irisDataRouter.get('/predictIris', (req, res) => {
 			const irisItem = {
 				petalLength: Number(req.query.petalLength),
 				petalWidth: Number(req.query.petalWidth),
@@ -92,11 +56,14 @@ class App {
 				sepalWidth: Number(req.query.sepalWidth),
 			};
 
-			res.json(this.cttsknn.predict(irisItem));
+			this.irisDataStore.getPrediction(irisItem).then(
+				(data: any) => { res.json(data); },
+				(err) => { res.json(err); }
+			);
 		});
 
-		this.dataRouter.get('/irisData', (req, res) => {
-			getAllIrisData().then(
+		this.irisDataRouter.get('/irisData', (req, res) => {
+			this.irisDataStore.getIrisData().then(
 				(irisData: any[]) => { res.json(irisData); },
 				(err) => { res.json(err); }
 			);
