@@ -4,6 +4,11 @@ import * as express from 'express';
 import { Application } from 'express-serve-static-core';
 import * as morgan from 'morgan';
 import * as path from 'path';
+
+import {
+	addQuote,
+	getQuotes,
+} from './database';
 import { IrisDataStore } from './iris-data-store';
 
 class App {
@@ -39,14 +44,17 @@ class App {
 		// App Data Routes
 		this.app.use('/irisdata', this.irisDataRouter);
 		this.app.use('/quotedata', this.quoteDataRouter);
+
+		// set up index.html route
+		this.app.get('/', (req, res) => {
+			res.sendfile(path.join(`${__dirname}/index.html`));
+		});
 	}
 
 	private mountRoutes(): void {
-		// this.irisDataRouter.get('/words', getQuotes);
+		this.quoteDataRouter.get('/getAllQuotes', getQuotes);
 
-		// this.irisDataRouter.get('/quotes', (req, res) => {
-		// 	res.json(req.query.name);
-		// });
+		this.quoteDataRouter.get('/addQuote', addQuote);
 
 		this.irisDataRouter.get('/predictIris', (req, res) => {
 			const irisItem = {

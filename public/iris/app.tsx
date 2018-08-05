@@ -17,12 +17,7 @@ interface IProps {
 	title: string;
 }
 
-interface IState {
-	name: string;
-	text: string;
-}
-
-export default class IrisGraph extends React.Component<IProps, IState> {
+export default class IrisGraph extends React.Component<IProps, any> {
 	private irisChart: IrisChart;
 
 	constructor(props: IProps) {
@@ -53,27 +48,6 @@ export default class IrisGraph extends React.Component<IProps, IState> {
 					this.irisChart = new IrisChart('#iris-chart');
 					this.irisChart.renderChart(data);
 				},
-				(err) => { console.log(err); }
-			);
-	}
-
-	public handleNameChange(event: any): void {
-		this.setState({ name: event.target.value });
-	}
-
-	public handleTextChange(event: any): void {
-		this.setState({ text: event.target.value });
-	}
-
-	public handleSubmit(event: any): void {
-		event.preventDefault();
-		fetch(`/data/quotes?name=${this.state.name}&text=${this.state.text}`)
-			.then(
-				(res) => res.json(),
-				(err) => { console.log(err); }
-			)
-			.then(
-				(json) => { console.log(json); },
 				(err) => { console.log(err); }
 			);
 	}
@@ -109,18 +83,6 @@ export default class IrisGraph extends React.Component<IProps, IState> {
 			);
 	}
 
-	public handleGetQuotes(): void {
-		fetch('/data/words')
-			.then(
-				(res) => res.json(),
-				(err) => { console.log(err); }
-			)
-			.then(
-				(json) => { console.log(json); },
-				(err) => { console.log(err); }
-			);
-	}
-
 	public renderIrisChart(): JSX.Element {
 		return (
 			<div id="iris-chart" />
@@ -140,23 +102,6 @@ export default class IrisGraph extends React.Component<IProps, IState> {
 					</div>
 					<div>
 						{this.renderIrisChart()}
-					</div>
-				</section>
-				<section>
-					<h2>This is index.html</h2>
-					<form onSubmit={this.handleSubmit}>
-						<label>
-							Name:
-							<input type="text" placeholder="name" onChange={this.handleNameChange} />
-						</label>
-						<label>
-							Text:
-							<input type="text" placeholder="quote" onChange={this.handleTextChange} />
-						</label>
-						<input type="submit" value="Submit" />
-					</form>
-					<div>
-						<input type="button" value="get quotes" onClick={this.handleGetQuotes}/>
 					</div>
 				</section>
 			</div>

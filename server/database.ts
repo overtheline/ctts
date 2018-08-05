@@ -45,6 +45,21 @@ export function getQuotes(req: express.Request, res: express.Response) {
 	});
 }
 
+export function addQuote(req: express.Request, res: express.Response) {
+	const name = req.query.name;
+	const text = req.query.text;
+
+	db.collection('quotes').save({ name, text }, (err) => {
+		if (err) {
+			console.log(err);
+			res.json(err);
+		}
+
+		console.log('saved to database');
+		res.redirect('/');
+	});
+}
+
 export function getAllIrisData() {
 	return new Promise(async (resolve, reject) => {
 		db.collection('iris').find().toArray((err, items) => {
