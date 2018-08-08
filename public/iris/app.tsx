@@ -24,12 +24,8 @@ export default class IrisGraph extends React.Component<IProps, any> {
 		super(props);
 
 		bindAll(this, [
-			'handleSubmit',
-			'handleNameChange',
-			'handleTextChange',
 			'handlePredict',
 			'handleGetData',
-			'handleGetQuotes',
 		]);
 	}
 
@@ -52,7 +48,26 @@ export default class IrisGraph extends React.Component<IProps, any> {
 			);
 	}
 
-	public handlePredict(): void {
+	public render(): JSX.Element {
+		return (
+			<div>
+				<h1>{this.props.title}</h1>
+				<section>
+					<div>
+						<input type="button" value="predict" onClick={this.handlePredict}/>
+					</div>
+					<div>
+						<input type="button" value="get data" onClick={this.handleGetData}/>
+					</div>
+					<div>
+						<div id="iris-chart" />
+					</div>
+				</section>
+			</div>
+		);
+	}
+
+	private handlePredict(): void {
 		fetch(`/irisdata/predictIris?petalLength=${0.5}&petalWidth=${3.4}&sepalLength=${4.5}&sepalWidth=${2.5}`)
 			.then(
 				(res) => res.json(),
@@ -71,7 +86,7 @@ export default class IrisGraph extends React.Component<IProps, any> {
 			);
 	}
 
-	public handleGetData(): void {
+	private handleGetData(): void {
 		fetch('/irisdata/irisData')
 			.then(
 				(res) => res.json(),
@@ -81,30 +96,5 @@ export default class IrisGraph extends React.Component<IProps, any> {
 				(json) => { console.log(json); },
 				(err) => { console.log(err); }
 			);
-	}
-
-	public renderIrisChart(): JSX.Element {
-		return (
-			<div id="iris-chart" />
-		);
-	}
-
-	public render(): JSX.Element {
-		return (
-			<div>
-				<h1>{this.props.title}</h1>
-				<section>
-					<div>
-						<input type="button" value="predict" onClick={this.handlePredict}/>
-					</div>
-					<div>
-						<input type="button" value="get data" onClick={this.handleGetData}/>
-					</div>
-					<div>
-						{this.renderIrisChart()}
-					</div>
-				</section>
-			</div>
-		);
 	}
 }

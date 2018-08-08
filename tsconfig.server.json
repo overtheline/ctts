@@ -4,6 +4,7 @@
     "outDir": "./dist"
   },
   "files": [
-    "./server/index.ts"
+		"./server/index.ts",
+		"./services/db/index.ts"
 	]
 }
