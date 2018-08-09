@@ -4,8 +4,12 @@ import {
 	pick,
 } from 'lodash';
 
+import { IRIS_FEATURES } from '../../../constants';
 import { fetchAllIrisData } from '../../db/getAllIrisData';
-import getIrisKnn, { IKNN } from './getIrisKnn';
+import getIrisKnn, {
+	IIrisKNN,
+	IKNN,
+} from './getIrisKnn';
 
 export interface IFeatures {
 	[key: string]: number;
@@ -16,15 +20,16 @@ export interface IDatum {
 	classification: string;
 }
 
-export const IRIS_FEATURES = [
-	'sepalLength',
-	'sepalWidth',
-	'petalLength',
-	'petalWidth',
-];
+let knn: IKNN;
+let types: string[];
 
-export default function getIrisMLModel(): Promise<IKNN> {
+export default function getIrisMLModel(): Promise<IIrisKNN> {
 	return new Promise(async (resolve) => {
+		if (knn && types) {
+			resolve({ knn, types });
+			return;
+		}
+
 		const data = await fetchAllIrisData();
 
 		const irisData: IDatum[] = map(data, (datum) => {
@@ -37,8 +42,10 @@ export default function getIrisMLModel(): Promise<IKNN> {
 			});
 		});
 
-		const knn: IKNN = getIrisKnn(irisData, IRIS_FEATURES);
+		const irisKnn = getIrisKnn(irisData, IRIS_FEATURES);
+		knn = irisKnn.knn;
+		types = irisKnn.types;
 
-		resolve(knn);
+		resolve({ knn, types });
 	});
 }

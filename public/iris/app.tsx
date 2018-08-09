@@ -75,12 +75,7 @@ export default class IrisGraph extends React.Component<IProps, any> {
 			)
 			.then(
 				(prediction) => {
-					const datum = {
-						...prediction.features,
-						type: prediction.classification,
-					};
-
-					this.irisChart.updateChart([datum]);
+					this.irisChart.updateChart([prediction]);
 				},
 				(err) => { console.log(err); }
 			);
@@ -93,7 +88,7 @@ export default class IrisGraph extends React.Component<IProps, any> {
 				(err) => { console.log(err); }
 			)
 			.then(
-				(json) => { console.log(json); },
+				(json) => { console.table(json); },
 				(err) => { console.log(err); }
 			);
 	}

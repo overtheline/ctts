@@ -13,6 +13,7 @@ export default function getDbConnection(): Promise<Db> {
 	return new Promise(async (resolve, reject) => {
 		if (db) {
 			resolve(db);
+			return;
 		}
 
 		console.log('connecting to db');

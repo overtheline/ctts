@@ -18,7 +18,12 @@ export interface IDatum {
 }
 
 export interface IKNN {
-	predict: (features: IFeatures | IFeatures[]) => string;
+	predict: (features: number[] | number[][]) => number[];
+}
+
+export interface IIrisKNN {
+	knn: IKNN;
+	types: string[];
 }
 
 export interface IDatasets {
@@ -28,7 +33,7 @@ export interface IDatasets {
 	testSetY: number[];
 }
 
-export default function getIrisKnn(	preData: IDatum[], featureKeys: string[]): IKNN {
+export default function getIrisKnn(	preData: IDatum[], featureKeys: string[]): IIrisKNN {
 	const data: IDatum[] = shuffleArray(preData);
 	const trainingSetSize = Math.floor(0.7 * data.length);
 
@@ -76,10 +81,11 @@ export default function getIrisKnn(	preData: IDatum[], featureKeys: string[]): I
 		}
 	);
 
-	const knn = new KNN(datasets.trainingSetX, datasets.trainingSetY, { k: 5 });
+	const knn: IKNN = new KNN(datasets.trainingSetX, datasets.trainingSetY, { k: 5 });
 
-	if (knn) {
+	if (!knn) {
 		console.error(`Cannot test. There is no trained model, knn = ${knn}`);
+		throw new Error('Cannot test. There is no trained model');
 	}
 
 	const result = knn.predict(datasets.testSetX);
@@ -87,7 +93,7 @@ export default function getIrisKnn(	preData: IDatum[], featureKeys: string[]): I
 
 	console.log(`Test Set Size = ${datasets.testSetX.length} and nummber of Misclassifications = ${predictionError}`);
 
-	return knn;
+	return { knn, types };
 }
 
 function error(predicted: number[], expected: number[]): number {
