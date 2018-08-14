@@ -20,3 +20,19 @@ export interface ITestIrisDatum {
 	sepalLength: number;
 	sepalWidth: number;
 }
+
+export interface ID3Node {
+	id: string;
+	group: number;
+}
+
+export interface ID3Link {
+	source: string;
+	target: string;
+	value: number;
+}
+
+export interface ID3Graph {
+	links: ID3Link[];
+	nodes: ID3Node[];
+}

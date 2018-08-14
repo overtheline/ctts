@@ -5,12 +5,17 @@ import { Application } from 'express-serve-static-core';
 import * as morgan from 'morgan';
 import * as path from 'path';
 
-import { db, ml } from '../services';
+import {
+	db,
+	graphs,
+	ml,
+} from '../services';
 
 class App {
 	public app: Application;
 	private irisDataRouter: Router;
 	private quoteDataRouter: Router;
+	private graphsDataRouter: Router;
 
 	constructor() {
 		// initialize server app
@@ -19,6 +24,7 @@ class App {
 		// Routers for data
 		this.irisDataRouter = Router();
 		this.quoteDataRouter = Router();
+		this.graphsDataRouter = Router();
 
 		// setup server
 		this.setup();
@@ -36,6 +42,7 @@ class App {
 		// App Data Routes
 		this.app.use('/irisdata', this.irisDataRouter);
 		this.app.use('/quotedata', this.quoteDataRouter);
+		this.app.use('/graphs', this.graphsDataRouter);
 
 		// set up index.html route
 		this.app.get('/', (req, res) => {
@@ -48,6 +55,8 @@ class App {
 		this.quoteDataRouter.get('/addQuote', db.addQuote);
 		this.irisDataRouter.get('/predictIris', ml.getIrisPrediction);
 		this.irisDataRouter.get('/irisData', db.getAllIrisData);
+		this.graphsDataRouter.get('/miserables', graphs.getMiserables);
+		this.graphsDataRouter.get('/randomGraph', graphs.getRandomGraph);
 	}
 }
 

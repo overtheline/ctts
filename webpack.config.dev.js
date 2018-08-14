@@ -8,8 +8,9 @@ module.exports = {
 	mode: 'development',
 	entry: {
 		app: './public/app/index.tsx',
-		iris: './public/iris/index.tsx',
+		graphs: './public/graphs/index.tsx',
 		index: './public/landing/index.tsx',
+		iris: './public/iris/index.tsx',
 	},
 	devtool: 'inline-source-map',
 	plugins: [
@@ -20,9 +21,16 @@ module.exports = {
 			template: 'public/index.html',
 			chunks: ['app'],
 			filename: 'app.html',
-		}),		
+		}),
 		new HtmlWebpackPlugin({
-			title: 'CTTS',
+			title: 'Graphs',
+			inject: 'body',
+			template: 'public/index.html',
+			chunks: ['graphs'],
+			filename: 'graphs.html',
+		}),
+		new HtmlWebpackPlugin({
+			title: 'Iris',
 			inject: 'body',
 			template: 'public/index.html',
 			chunks: ['iris'],
