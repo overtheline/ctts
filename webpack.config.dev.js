@@ -52,6 +52,13 @@ module.exports = {
 	module: {
 		rules: [
 			{
+				test: /\.css$/,
+				ues: [
+					'style-loader',
+					'css-loader',
+				]
+			},
+			{
 				test: /\.tsx?$/,
 				exclude: /node_modules/,
 				use: [
