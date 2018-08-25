@@ -4,7 +4,7 @@ import { Db, MongoError } from 'mongodb';
 
 import {
 	IRawIrisDatum,
-} from '../../types';
+} from '../../types/irisTypes';
 import getDbConnection from './getDbConnection';
 
 export default async function getAllIrisData(req: Request, res: Response): Promise<void> {

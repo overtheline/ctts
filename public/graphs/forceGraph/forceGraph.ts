@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { ID3Graph } from '../../../types';
+import { IGraph } from '../../../types/graphTypes';
 
 export default async function getMiserablesGraph() {
 	const svg = d3.select('#graphs').append('svg');
@@ -83,7 +83,7 @@ export default async function getMiserablesGraph() {
 	}
 }
 
-export function forceGraph(graph: ID3Graph) {
+export function forceGraph(graph: IGraph) {
 	function ticked() {
 		link
 				.attr('x1', (d: any) => d.source.x)
@@ -146,7 +146,7 @@ export function forceGraph(graph: ID3Graph) {
 					.on('end', dragended));
 
 	node.append('title')
-			.text((d: any) => d.id);
+			.text((d: any) => `${d.id}:${d.group}`);
 
 	simulation
 			.nodes(graph.nodes)

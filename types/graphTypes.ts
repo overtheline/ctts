@@ -6,11 +6,11 @@ export interface IGraphNode {
 }
 
 export interface IGraphLink {
+	id: string;
+	label: string;
 	source: string;
 	target: string;
 	value: number;
-	id: string;
-	label: string;
 }
 
 export interface IGraph {

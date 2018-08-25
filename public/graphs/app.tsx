@@ -1,33 +1,39 @@
 import * as React from 'react';
 
+import { IGraph } from '../../types/graphTypes';
 import getMiserablesGraph, { forceGraph } from './forceGraph/forceGraph';
+import './styles.css';
 
-export default class GraphsApp extends React.Component<any, any> {
+interface IState {
+	graphs: IGraph[];
+}
+
+export default class GraphsApp extends React.Component<any, IState> {
 	constructor(props: any) {
 		super(props);
 
-		this.state = { graph: null };
+		this.state = { graphs: [] };
 	}
 	public componentDidMount() {
 		getMiserablesGraph();
 
-		fetch('/graphs/randomGraph?size=40&type=directed').then(
+		fetch('/graphs/randomGraph?size=10').then(
 			(res) => res.json(),
 			(err) => { console.log(err); }
 		).then(
 			(graph) => {
-				this.setState({ graph });
+				this.setState({ graphs: [graph] });
 			}
 		);
 	}
 
 	public componentDidUpdate() {
 		const {
-			graph,
+			graphs,
 		} = this.state;
 
-		if (graph) {
-			forceGraph(graph);
+		if (graphs.length) {
+			forceGraph(graphs[0]);
 		}
 	}
 

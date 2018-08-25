@@ -8,7 +8,7 @@ import * as React from 'react';
 import {
 	IIrisDatum,
 	IRawIrisDatum,
-} from '../../types';
+} from '../../types/irisTypes';
 import {
 	IrisChart,
 } from './chart/scatter';

@@ -53,10 +53,10 @@ module.exports = {
 		rules: [
 			{
 				test: /\.css$/,
-				ues: [
+				use: [
 					'style-loader',
 					'css-loader',
-				]
+				],
 			},
 			{
 				test: /\.tsx?$/,

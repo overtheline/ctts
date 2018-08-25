@@ -4,7 +4,7 @@ import {
 	reduce,
 } from 'lodash';
 
-import { IIrisDatum } from '../../../../types';
+import { IIrisDatum } from '../../../../types/irisTypes';
 
 interface IColorMap {
 	[type: string]: string;
