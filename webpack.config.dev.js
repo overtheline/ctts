@@ -11,6 +11,7 @@ module.exports = {
 		graphs: './public/graphs/index.tsx',
 		index: './public/landing/index.tsx',
 		iris: './public/iris/index.tsx',
+		sp: './public/sp/index.tsx',
 	},
 	devtool: 'inline-source-map',
 	plugins: [
@@ -42,6 +43,13 @@ module.exports = {
 			template: 'public/index.html',
 			chunks: ['index'],
 			filename: 'index.html',
+		}),
+		new HtmlWebpackPlugin({
+			title: 'SP',
+			inject: 'body',
+			template: 'public/index.html',
+			chunks: ['sp'],
+			filename: 'sp-charts.html',
 		}),
 		new webpack.DefinePlugin({
       'process.env': {

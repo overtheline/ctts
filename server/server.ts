@@ -16,6 +16,7 @@ class App {
 	private irisDataRouter: Router;
 	private quoteDataRouter: Router;
 	private graphsDataRouter: Router;
+	private spDataRouter: Router;
 
 	constructor() {
 		// initialize server app
@@ -25,6 +26,7 @@ class App {
 		this.irisDataRouter = Router();
 		this.quoteDataRouter = Router();
 		this.graphsDataRouter = Router();
+		this.spDataRouter = Router();
 
 		// setup server
 		this.setup();
@@ -43,6 +45,7 @@ class App {
 		this.app.use('/irisdata', this.irisDataRouter);
 		this.app.use('/quotedata', this.quoteDataRouter);
 		this.app.use('/graphs', this.graphsDataRouter);
+		this.app.use('/sp', this.spDataRouter);
 
 		// set up index.html route
 		this.app.get('/', (req, res) => {
@@ -57,6 +60,7 @@ class App {
 		this.irisDataRouter.get('/irisData', db.getAllIrisData);
 		this.graphsDataRouter.get('/miserables', graphs.getMiserables);
 		this.graphsDataRouter.get('/randomGraph', graphs.getRandomGraph);
+		this.spDataRouter.get('/names', db.getSPNames);
 	}
 }
 
