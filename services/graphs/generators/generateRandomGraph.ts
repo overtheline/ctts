@@ -19,6 +19,10 @@ import {
 import { generateArray } from '../../../utils/generate-array';
 import { shuffleArray } from '../../../utils/shuffle-array';
 
+/**
+ * Generates a random tree
+ * @param n number of nodes
+ */
 export function generateRandomTree(n: number): IGraph {
 	const nodes: IGraphNode[] = map(
 		generateArray(n),
@@ -37,20 +41,23 @@ export function generateRandomTree(n: number): IGraph {
 				return linkList;
 			}
 
-			let sourceNodeId: string;
+			let sourceNode: IGraphNode;
 
 			if (targetIndex === 1) {
-				sourceNodeId = nodeList[0].id;
+				sourceNode = nodeList[0];
+			} else {
+				sourceNode = nodeList[randomInt(0, targetIndex)];
 			}
 
-			sourceNodeId = nodeList[randomInt(0, targetIndex)].id;
+			sourceNode.group++;
+			targetNode.group++;
 
 			return [
 				...linkList,
 				{
-					id: `${sourceNodeId}:${targetNode.id}`,
-					label: `link-${sourceNodeId}:${targetNode.id}`,
-					source: sourceNodeId,
+					id: `${sourceNode.id}:${targetNode.id}`,
+					label: `link-${sourceNode.id}:${targetNode.id}`,
+					source: sourceNode.id,
 					target: targetNode.id,
 					value: 1,
 				},
@@ -62,26 +69,24 @@ export function generateRandomTree(n: number): IGraph {
 	return { nodes, links };
 }
 
+/**
+ * Generates a sparse graph
+ * @param n number of nodes
+ */
 export function generateRandomGraph(n: number): IGraph {
 	const initialGraph = generateRandomTree(n);
-	const maxLinksToAdd = (n - 1) * (n - 2) / 2;
-	const linksToAdd = randomInt(0, maxLinksToAdd + 1);
-	const allPossibleLinks: IGraphLink[] = reduce(
+	const maxLinksToAdd = Math.floor(Math.sqrt((n - 1) * (n - 2) / 2));
+	const linksToAdd = randomInt(0, maxLinksToAdd);
+	const allPossibleLinks: IGraphNode[][] = reduce(
 		initialGraph.nodes,
-		(linkList: IGraphLink[], sourceNode: IGraphNode, sourceIndex: number, nodeList: IGraphNode[]): IGraphLink[] => {
+		(linkList: IGraphNode[][], sourceNode: IGraphNode, sourceIndex: number, nodeList: IGraphNode[]): IGraphNode[][] => {
 			if (sourceIndex === nodeList.length - 1) {
 				return linkList;
 			}
 
 			const admissableLinks = map(
 				slice(nodeList, sourceIndex + 1),
-				(targetNode: IGraphNode) => ({
-					id: `${sourceNode.id}:${targetNode.id}`,
-					label: `link-${sourceNode.id}:${targetNode.id}`,
-					source: `${sourceNode.id}`,
-					target: `${targetNode.id}`,
-					value: 1,
-				})
+				(targetNode: IGraphNode) => [targetNode, sourceNode]
 			);
 
 			return [
@@ -92,14 +97,34 @@ export function generateRandomGraph(n: number): IGraph {
 		[]
 	);
 
-	const linksToChoose: IGraphLink[] = shuffleArray(filter(
+	const linksToChoose = shuffleArray(filter(
 		allPossibleLinks,
-		(possibleLink) => !some(initialGraph.links, (existingLink) => existingLink.id === possibleLink.id)
+		(possibleLink: [IGraphNode, IGraphNode]) => !some(
+			initialGraph.links,
+			(existingLink: IGraphLink) => existingLink.source === possibleLink[0].id
+				&& existingLink.target === possibleLink[1].id
+		)
 	));
+
+	const chosenLinks = map(
+		slice(linksToChoose, 0, linksToAdd),
+		([sourceNode, targetNode]: [IGraphNode, IGraphNode]) => {
+			sourceNode.group++;
+			targetNode.group++;
+
+			return {
+				id: `${sourceNode.id}:${targetNode.id}`,
+				label: `link-${sourceNode.id}:${targetNode.id}`,
+				source: sourceNode.id,
+				target: targetNode.id,
+				value: 1,
+			};
+		}
+	);
 
 	const links = [
 		...initialGraph.links,
-		...slice(linksToChoose, 0, linksToAdd),
+		...chosenLinks,
 	];
 
 	const nodes = initialGraph.nodes;
