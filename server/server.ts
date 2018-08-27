@@ -56,11 +56,15 @@ class App {
 	private mountRoutes(): void {
 		this.quoteDataRouter.get('/getAllQuotes', db.getQuotes);
 		this.quoteDataRouter.get('/addQuote', db.addQuote);
+
 		this.irisDataRouter.get('/predictIris', ml.getIrisPrediction);
 		this.irisDataRouter.get('/irisData', db.getAllIrisData);
+
 		this.graphsDataRouter.get('/miserables', graphs.getMiserables);
 		this.graphsDataRouter.get('/randomGraph', graphs.getRandomGraph);
+
 		this.spDataRouter.get('/names', db.getSPNames);
+		this.spDataRouter.get('/data', db.getSPData);
 	}
 }
 
