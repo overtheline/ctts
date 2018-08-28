@@ -1,3 +1,15 @@
 .dropdown {
 	width: 300px;
 }
+
+.split-container {
+	display: flex;
+}
+
+.left-container {
+	flex: 1 1 auto;
+}
+
+.right-container {
+	flex: 1 1 auto;
+}

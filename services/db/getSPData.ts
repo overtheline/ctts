@@ -10,9 +10,9 @@ import getDbConnection from './getDbConnection';
 export default async function getSPData(req: Request, res: Response): Promise<void> {
 	const db: Db = await getDbConnection();
 
-	const name = req.query.name;
+	const names: [string, string] = req.query.names.split(',');
 
-	db.collection('sp').find({ Name: name }).toArray((err, result) => {
+	db.collection('sp').find({ Name: { $in: names } }).toArray((err, result) => {
 		if (err) {
 			console.log('get sp data error.', err);
 			res.send(err);

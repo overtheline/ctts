@@ -1,10 +1,13 @@
 import {
+	forEach,
+	groupBy,
 	map,
 } from 'lodash';
 import * as React from 'react';
 import Select from 'react-select';
 
 import { lineChart } from './charts/line-chart';
+import { scatterChart } from './charts/scatter-chart';
 import './styles.css';
 
 interface ISelectOption {
@@ -23,11 +26,13 @@ export interface ISPDatum {
 }
 
 interface IState {
-	selectedName?: ISelectOption;
+	chartZeroName?: ISelectOption;
+	chartOneName?: ISelectOption;
 	spNames: ISelectOption[];
 }
 
-const LINE_GRAPH_ELEMENT_ID = 'line-graph-0';
+const lineChartElementIds = ['line-chart-0', 'line-chart-1'];
+const scatterChartElementId = 'scatter-chart-0';
 
 export default class SPApp extends React.Component<any, IState> {
 	constructor(props: any) {
@@ -46,21 +51,50 @@ export default class SPApp extends React.Component<any, IState> {
 		return (
 			<div>
 				<h1>S and P</h1>
-				<div className={'dropdown'}>
-					{!!this.state.spNames.length && this.renderNamesDropdown()}
+				<div className={'split-container'}>
+					{!!this.state.spNames.length && this.renderLineCharts()}
+					{!!this.state.spNames.length && this.renderScatterChart()}
 				</div>
-				<div id={LINE_GRAPH_ELEMENT_ID} />
 			</div>
 		);
 	}
 
-	private renderNamesDropdown = () => (
-		<Select
-			onChange={this.changeSelectedNameHandler}
-			options={this.state.spNames}
-			value={this.state.selectedName}
-		/>
-	)
+	private renderScatterChart = () => {
+		return (
+			<div className={'right-container'}>
+				<div className={'scatter-chart-container'}>
+					<div id={scatterChartElementId} />
+				</div>
+			</div>
+		);
+	}
+
+	private renderLineCharts = () => {
+		return (
+			<div className={'left-container'}>
+				<div className={'line-chart-container'}>
+					<div className={'dropdown'}>
+					<Select
+						onChange={this.changeChartZero}
+						options={this.state.spNames}
+						value={this.state.chartZeroName}
+					/>
+					</div>
+					<div id={lineChartElementIds[0]} />
+				</div>
+				<div className={'line-chart-container'}>
+					<div className={'dropdown'}>
+					<Select
+						onChange={this.changeChartOne}
+						options={this.state.spNames}
+						value={this.state.chartOneName}
+					/>
+					</div>
+					<div id={lineChartElementIds[1]} />
+				</div>
+			</div>
+		);
+	}
 
 	private fetchSPNames = () => {
 		fetch('/sp/names').then(
@@ -76,7 +110,8 @@ export default class SPApp extends React.Component<any, IState> {
 					})
 				);
 				this.setState({
-					selectedName: spNames[0],
+					chartOneName: spNames[1],
+					chartZeroName: spNames[0],
 					spNames,
 				}, () => {
 					this.fetchSPData();
@@ -85,28 +120,52 @@ export default class SPApp extends React.Component<any, IState> {
 		);
 	}
 
-	private fetchSPData = async () => {
-		if (!this.state.selectedName) {
+	private fetchSPData = async (): Promise<void> => {
+		if (!this.state.chartZeroName || !this.state.chartOneName) {
 			return;
 		}
 
-		await fetch(`/sp/data?name=${this.state.selectedName.value}`).then(
+		await fetch(`/sp/data?names=${this.state.chartZeroName.value},${this.state.chartOneName.value}`).then(
 			(res) => res.json(),
 			(err) => { console.log(err); }
 		).then(
 			(data: ISPDatum[]) => {
-				lineChart({
-					data,
-					elementId: LINE_GRAPH_ELEMENT_ID,
-					height: 900,
-					width: 900,
+				if (!this.state.chartZeroName || !this.state.chartOneName) {
+					return;
+				}
+
+				const groupedData = groupBy(data, 'Name');
+
+				forEach(
+					[groupedData[this.state.chartZeroName.value], groupedData[this.state.chartOneName.value]],
+					(groupData, index) => {
+						lineChart({
+							data: groupData,
+							elementId: lineChartElementIds[index],
+							height: 300,
+							width: 900,
+						});
+					}
+				);
+
+				scatterChart({
+					data: [groupedData[this.state.chartZeroName.value], groupedData[this.state.chartOneName.value]],
+					elementId: scatterChartElementId,
+					height: 500,
+					width: 500,
 				});
 			}
 		);
 	}
 
-	private changeSelectedNameHandler = (nextValue: ISelectOption) => {
-		this.setState({ selectedName: nextValue }, () => {
+	private changeChartZero = (nextValue: ISelectOption) => {
+		this.setState({ chartZeroName: nextValue }, () => {
+			this.fetchSPData();
+		});
+	}
+
+	private changeChartOne = (nextValue: ISelectOption) => {
+		this.setState({ chartOneName: nextValue }, () => {
 			this.fetchSPData();
 		});
 	}

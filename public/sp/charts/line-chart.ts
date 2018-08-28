@@ -1,20 +1,16 @@
 import * as d3 from 'd3';
-import {
-	map,
-	sortBy,
-} from 'lodash';
 
 import { ISPDatum } from '../app';
 import './line-chart-styles.css';
 
-export interface ILineGraphConfig {
+export interface ILineChartConfig {
 	elementId: string;
 	data: ISPDatum[];
 	height?: number;
 	width?: number;
 }
 
-export function lineChart(config: ILineGraphConfig) {
+export function lineChart(config: ILineChartConfig) {
 	const {
 		elementId,
 		data,
@@ -22,7 +18,7 @@ export function lineChart(config: ILineGraphConfig) {
 		width = 800,
 	} = config;
 
-	d3.select('.line-chart-svg').remove();
+	d3.select(`#${elementId} svg`).remove();
 	const svg = d3.select(`#${elementId}`).append('svg');
 	svg.attr('width', width);
 	svg.attr('height', height);
@@ -58,27 +54,27 @@ export function lineChart(config: ILineGraphConfig) {
 	yScale.domain([yMin, yMax]);
 
 	g.append('g')
-		.attr('transform', `translate(0,${chartHeight})`)
-		.call(d3.axisBottom(xScale))
-	.select('.domain')
-		.remove();
+			.attr('transform', `translate(0,${chartHeight})`)
+			.call(d3.axisBottom(xScale))
+		.select('.domain')
+			.remove();
 
 	g.append('g')
-		.call(d3.axisLeft(yScale))
-	.append('text')
-		.attr('fill', '#000')
-		.attr('transform', 'rotate(-90)')
-		.attr('y', 6)
-		.attr('dy', '0.71em')
-		.attr('text-anchor', 'end')
-		.text('Price ($)');
+			.call(d3.axisLeft(yScale))
+		.append('text')
+			.attr('fill', '#000')
+			.attr('transform', 'rotate(-90)')
+			.attr('y', 6)
+			.attr('dy', '0.71em')
+			.attr('text-anchor', 'end')
+			.text('Price ($)');
 
 	g.append('path')
-		.datum(data)
-		.attr('fill', 'none')
-		.attr('stroke', 'steelblue')
-		.attr('stroke-linejoin', 'round')
-		.attr('stroke-linecap', 'round')
-		.attr('stroke-width', 1.5)
-		.attr('d', line);
+			.datum(data)
+			.attr('fill', 'none')
+			.attr('stroke', 'steelblue')
+			.attr('stroke-linejoin', 'round')
+			.attr('stroke-linecap', 'round')
+			.attr('stroke-width', 1.5)
+			.attr('d', line);
 }
