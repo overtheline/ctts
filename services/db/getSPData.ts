@@ -7,6 +7,16 @@ import { Db } from 'mongodb';
 
 import getDbConnection from './getDbConnection';
 
+const columnHeaders = [
+	'close',
+	'date',
+	'high',
+	'low',
+	'Name',
+	'open',
+	'volume',
+];
+
 export default async function getSPData(req: Request, res: Response): Promise<void> {
 	const db: Db = await getDbConnection();
 
@@ -18,20 +28,18 @@ export default async function getSPData(req: Request, res: Response): Promise<vo
 			res.send(err);
 		}
 
-		result.sort((a, b) => parseDateTime(a.date) - parseDateTime(b.date));
-
-		const parsedResult = map(
+		const rows: string[][] = map(
 			result,
-			(datum) => ({
-				Name: datum.Name,
-				close: Number(datum.close),
-				date: parseDateString(datum.date),
-				high: Number(datum.high),
-				low: Number(datum.low),
-				open: Number(datum.open),
-				volume: Number(datum.volume),
-			})
+			(datum) => map(
+				columnHeaders,
+				(col) => String(datum[col])
+			)
 		);
+
+		const parsedResult = {
+			columnHeaders,
+			rows,
+		};
 
 		res.send(parsedResult);
 	});

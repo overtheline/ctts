@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import SPApp from './app';
+import StockApp from './app';
 
 ReactDOM.render(
-	<SPApp />,
+	<StockApp />,
 	document.getElementById('page')
 );

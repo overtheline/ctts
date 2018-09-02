@@ -1,7 +1,12 @@
 import {
+	filter,
+	find,
 	forEach,
 	groupBy,
 	map,
+	reduce,
+	some,
+	zip,
 } from 'lodash';
 import * as React from 'react';
 import Select from 'react-select';
@@ -15,48 +20,77 @@ interface ISelectOption {
 	value: string;
 }
 
-export interface ISPDatum {
-	Name: string;
+export interface IRawStockData {
+	columnHeaders: string[];
+	rows: string[][];
+}
+
+export interface IStockDatum {
 	close: number;
 	date: string;
 	high: number;
 	low: number;
+	Name: string;
 	open: number;
 	volume: number;
 }
 
 interface IState {
-	chartZeroName?: ISelectOption;
-	chartOneName?: ISelectOption;
-	spNames: ISelectOption[];
+	chartOneName: string;
+	chartZeroName: string;
+	selectedTimeRangeOption: string;
+	stockNames: ISelectOption[];
 }
 
 const lineChartElementIds = ['line-chart-0', 'line-chart-1'];
 const scatterChartElementId = 'scatter-chart-0';
+const timeRangeOptions: string[] = [
+	'5yrs',
+	'1yr',
+	'6mo',
+];
 
-export default class SPApp extends React.Component<any, IState> {
+export default class StockApp extends React.Component<any, IState> {
 	constructor(props: any) {
 		super(props);
 
+		// itnitial state
 		this.state = {
-			spNames: [],
+			chartOneName: 'AAPL',
+			chartZeroName: 'MSFT',
+			selectedTimeRangeOption: timeRangeOptions[0],
+			stockNames: [],
 		};
 	}
 
 	public componentDidMount() {
-		this.fetchSPNames();
+		this.fetchStockNames();
 	}
 
 	public render() {
 		return (
 			<div>
-				<h1>S and P</h1>
+				<h1>CTTS</h1>
+				<div className={'control-container'}>
+					{this.renderControls()}
+				</div>
 				<div className={'split-container'}>
-					{!!this.state.spNames.length && this.renderLineCharts()}
-					{!!this.state.spNames.length && this.renderScatterChart()}
+					{!!this.state.stockNames.length && this.renderLineCharts()}
+					{!!this.state.stockNames.length && this.renderScatterChart()}
 				</div>
 			</div>
 		);
+	}
+
+	private renderControls = () => {
+		return map(timeRangeOptions, (option) => (
+			<input
+				key={option}
+				onClick={this.changeTimeRange}
+				type={'button'}
+				value={option}
+			/>
+		));
 	}
 
 	private renderScatterChart = () => {
@@ -70,14 +104,23 @@ export default class SPApp extends React.Component<any, IState> {
 	}
 
 	private renderLineCharts = () => {
+		const chartZeroValue = find(
+			this.state.stockNames,
+			(nameOption) => nameOption.value === this.state.chartZeroName
+		);
+		const chartOneValue = find(
+			this.state.stockNames,
+			(nameOption) => nameOption.value === this.state.chartOneName
+		);
 		return (
 			<div className={'left-container'}>
 				<div className={'line-chart-container'}>
 					<div className={'dropdown'}>
 					<Select
+						maxMenuHeight={200}
 						onChange={this.changeChartZero}
-						options={this.state.spNames}
-						value={this.state.chartZeroName}
+						options={this.state.stockNames}
+						value={chartZeroValue}
 					/>
 					</div>
 					<div id={lineChartElementIds[0]} />
@@ -85,9 +128,10 @@ export default class SPApp extends React.Component<any, IState> {
 				<div className={'line-chart-container'}>
 					<div className={'dropdown'}>
 					<Select
+						maxMenuHeight={200}
 						onChange={this.changeChartOne}
-						options={this.state.spNames}
-						value={this.state.chartOneName}
+						options={this.state.stockNames}
+						value={chartOneValue}
 					/>
 					</div>
 					<div id={lineChartElementIds[1]} />
@@ -96,77 +140,96 @@ export default class SPApp extends React.Component<any, IState> {
 		);
 	}
 
-	private fetchSPNames = () => {
+	private fetchStockNames = () => {
 		fetch('/sp/names').then(
 			(res) => res.json(),
 			(err) => { console.log(err); }
 		).then(
 			(names: string[]) => {
-				const spNames = map(
+				const stockNames: ISelectOption[] = map(
 					names,
 					(name) => ({
 						label: name,
 						value: name,
 					})
 				);
+
 				this.setState({
-					chartOneName: spNames[1],
-					chartZeroName: spNames[0],
-					spNames,
+					stockNames,
 				}, () => {
-					this.fetchSPData();
+					this.fetchStockData();
 				});
 			}
 		);
 	}
 
-	private fetchSPData = async (): Promise<void> => {
+	private fetchStockData = async (): Promise<void> => {
 		if (!this.state.chartZeroName || !this.state.chartOneName) {
 			return;
 		}
 
-		await fetch(`/sp/data?names=${this.state.chartZeroName.value},${this.state.chartOneName.value}`).then(
+		await fetch(`/sp/data?names=${this.state.chartZeroName},${this.state.chartOneName}`).then(
 			(res) => res.json(),
 			(err) => { console.log(err); }
 		).then(
-			(data: ISPDatum[]) => {
+			({ columnHeaders, rows }: IRawStockData) => {
 				if (!this.state.chartZeroName || !this.state.chartOneName) {
 					return;
 				}
 
-				const groupedData = groupBy(data, 'Name');
+				const groupZeroData = {
+					columnHeaders,
+					rows: filter(rows, (row) => some(row, (d) => d === this.state.chartZeroName)),
+				};
+				const groupOneData = {
+					columnHeaders,
+					rows: filter(rows, (row) => some(row, (d) => d === this.state.chartOneName)),
+				};
 
 				forEach(
-					[groupedData[this.state.chartZeroName.value], groupedData[this.state.chartOneName.value]],
+					[groupZeroData, groupOneData],
 					(groupData, index) => {
 						lineChart({
 							data: groupData,
 							elementId: lineChartElementIds[index],
-							height: 300,
-							width: 900,
+							height: 200,
+							width: 500,
 						});
 					}
 				);
 
+				const scatterData = zip(
+					map(groupZeroData.rows, (row) => Number(row[0])),
+					map(groupOneData.rows, (row) => Number(row[0]))
+				);
+
 				scatterChart({
-					data: [groupedData[this.state.chartZeroName.value], groupedData[this.state.chartOneName.value]],
+					data: scatterData,
 					elementId: scatterChartElementId,
-					height: 500,
-					width: 500,
+					height: 400,
+					width: 400,
+					xLabel: this.state.chartZeroName,
+					yLabel: this.state.chartOneName,
 				});
 			}
 		);
 	}
 
-	private changeChartZero = (nextValue: ISelectOption) => {
-		this.setState({ chartZeroName: nextValue }, () => {
-			this.fetchSPData();
+	private changeChartZero = ({value}: ISelectOption) => {
+		this.setState({ chartZeroName: value }, () => {
+			this.fetchStockData();
 		});
 	}
 
-	private changeChartOne = (nextValue: ISelectOption) => {
-		this.setState({ chartOneName: nextValue }, () => {
-			this.fetchSPData();
+	private changeChartOne = ({value}: ISelectOption) => {
+		this.setState({ chartOneName: value }, () => {
+			this.fetchStockData();
+		});
+	}
+
+	private changeTimeRange = (event: any) => {
+		this.setState({
+			selectedTimeRangeOption: event.target.value,
 		});
 	}
 }

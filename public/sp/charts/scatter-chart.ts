@@ -1,17 +1,19 @@
 import * as d3 from 'd3';
 import {
 	map,
-	zip,
 } from 'lodash';
+import {
+	round,
+} from 'mathjs';
 import SimpleLinearRegression from 'ml-regression-simple-linear';
-
-import { ISPDatum } from '../app';
 
 export interface IScatterChartConfig {
 	elementId: string;
-	data: [ISPDatum[], ISPDatum[]];
+	data: Array<[number | undefined, number | undefined]>;
 	height?: number;
 	width?: number;
+	xLabel: string;
+	yLabel: string;
 }
 
 export function scatterChart(config: IScatterChartConfig) {
@@ -20,16 +22,18 @@ export function scatterChart(config: IScatterChartConfig) {
 		data,
 		height = 500,
 		width = 800,
+		xLabel,
+		yLabel,
 	} = config;
 
 	d3.select(`#${elementId} svg`).remove();
 	const svg = d3.select(`#${elementId}`).append('svg');
 	svg.attr('width', width);
 	svg.attr('height', height);
-	svg.classed('line-chart-svg', true);
+	svg.classed('scatter-chart-svg', true);
 
 	const margin = {
-		bottom: 30,
+		bottom: 100,
 		left: 40,
 		right: 20,
 		top: 20,
@@ -45,15 +49,29 @@ export function scatterChart(config: IScatterChartConfig) {
 	const yScale = d3.scaleLinear()
 		.range([chartHeight, 0]);
 
-	const [xMin = 0, xMax = 1] = d3.extent(data[0], (d) => d.close);
+	const [xMin = 0, xMax = 1] = d3.extent(data, (d) => d[0]);
 	xScale.domain([xMin, xMax]);
 
-	const [yMin = 0, yMax = 1] = d3.extent(data[1], (d) => d.close);
+	const [yMin = 0, yMax = 1] = d3.extent(data, (d) => d[1]);
 	yScale.domain([yMin, yMax]);
 
+	// get flat data: X, Y
+	const X = map(data, (d) => Number(d[0]));
+	const Y = map(data, (d) => Number(d[1]));
+
+	// compute Pearson correlation
+	const XY = map(X, (x, i) =>  x * Y[i]);
+	const muX2 = d3.mean(map(X, (x) => x * x)) || 0;
+	const muY2 = d3.mean(map(Y, (y) => y * y)) || 0;
+	const muX = d3.mean(X) || 0;
+	const muY = d3.mean(Y) || 0;
+	const muXY = d3.mean(XY) || 0;
+	const rho = (muXY - (muX * muY)) / (Math.sqrt(muX2 - (muX * muX)) * Math.sqrt(muY2 - (muY * muY)));
+
+	// compute linear regression
 	const regression = new SimpleLinearRegression(
-		map(data[0], (d) => d.close),
-		map(data[1], (d) => d.close)
+		map(data, (d) => d[0]),
+		map(data, (d) => d[1])
 	);
 	const x0 = xMin;
 	const x1 = xMax;
@@ -64,27 +82,34 @@ export function scatterChart(config: IScatterChartConfig) {
 	.x((d: any) => xScale(d[0]))
 	.y((d: any) => yScale(d[1]));
 
-	const scatterData = map(
-		zip(data[0], data[1]),
-		([d0, d1]) => {
-			if (d0 && d1) {
-				return [d0.close, d1.close];
-			}
-			return [];
-		}
-	);
-
-	g.append('g')
+	const xAxis = g.append('g')
 		.attr('class', 'x axis')
 		.attr('transform', 'translate(0,' + chartHeight + ')')
-		.call(d3.axisBottom(xScale))
-	.append('text')
+		.call(d3.axisBottom(xScale));
+
+	xAxis.append('text')
 		.attr('class', 'label')
 		.attr('x', chartWidth)
 		.attr('y', -6)
 		.style('text-anchor', 'end')
 		.style('fill', 'black')
-		.text(`${data[0][0].Name}`);
+		.text(`${xLabel}`);
+
+	xAxis.append('text')
+		.attr('class', 'stats')
+		.attr('x', 0)
+		.attr('y', 30)
+		.style('text-anchor', 'start')
+		.style('fill', 'black')
+		.text(`Pearson Correlation: ${round(rho, 4)}`);
+
+	xAxis.append('text')
+		.attr('class', 'stats')
+		.attr('x', 0)
+		.attr('y', 50)
+		.style('text-anchor', 'start')
+		.style('fill', 'black')
+		.text(`Regression: ${round(regression.slope, 4)}`);
 
 	g.append('g')
 			.attr('class', 'y axis')
@@ -96,15 +121,15 @@ export function scatterChart(config: IScatterChartConfig) {
 			.attr('dy', '.71em')
 			.style('text-anchor', 'end')
 			.style('fill', 'black')
-			.text(`${data[1][0].Name}`);
+			.text(`${yLabel}`);
 
 	g.selectAll('.dot')
-			.data(scatterData)
+			.data(data)
 		.enter().append('circle')
 			.attr('class', 'dot')
-			.attr('r', 3.5)
-			.attr('cx', (d) => xScale(d[0]))
-			.attr('cy', (d) => yScale(d[1]))
+			.attr('r', 1.5)
+			.attr('cx', (d) => xScale(Number(d[0])))
+			.attr('cy', (d) => yScale(Number(d[1])))
 			.style('fill', 'steelblue');
 
 	g.append('path')
