@@ -1,21 +1,17 @@
-import {
-	filter,
-	find,
-	forEach,
-	groupBy,
-	map,
-	reduce,
-	some,
-	zip,
-} from 'lodash';
+import * as _ from 'lodash';
 import * as React from 'react';
 import Select from 'react-select';
 
-import { lineChart } from './charts/line-chart';
-import { scatterChart } from './charts/scatter-chart';
+import StockCorrelation from './components/stockCorrelationChart';
+import StockTimeSeries from './components/stockTimeSeriesChart';
+import TimeRangeControl from './components/timeRangeControl';
+import {
+	fetchStockData,
+	fetchStockNames,
+} from './fetch';
 import './styles.css';
 
-interface ISelectOption {
+export interface ISelectOption {
 	label: string;
 	value: string;
 }
@@ -23,6 +19,10 @@ interface ISelectOption {
 export interface IRawStockData {
 	columnHeaders: string[];
 	rows: string[][];
+}
+
+export interface IStockDataStore {
+	[name: string]: string[][];
 }
 
 export interface IStockDatum {
@@ -35,10 +35,11 @@ export interface IStockDatum {
 	volume: number;
 }
 
-interface IState {
-	chartOneName: string;
-	chartZeroName: string;
+export interface IState {
+	selectedStockNames: string[];
 	selectedTimeRangeOption: string;
+	stockColumnHeaders: string[];
+	stockDataStore: IStockDataStore;
 	stockNames: ISelectOption[];
 }
 
@@ -56,178 +57,143 @@ export default class StockApp extends React.Component<any, IState> {
 
 		// itnitial state
 		this.state = {
-			chartOneName: 'AAPL',
-			chartZeroName: 'MSFT',
+			selectedStockNames: ['AAPL', 'MSFT'],
 			selectedTimeRangeOption: timeRangeOptions[0],
+			stockColumnHeaders: [],
+			stockDataStore: {},
 			stockNames: [],
 		};
 	}
 
-	public componentDidMount() {
-		this.fetchStockNames();
+	public async componentDidMount() {
+		const stockNames = await fetchStockNames();
+		this.setState({
+			stockNames,
+		}, this.updateStockData);
 	}
 
 	public render() {
 		return (
 			<div>
 				<h1>CTTS</h1>
-				<div className={'control-container'}>
-					{this.renderControls()}
-				</div>
+				<TimeRangeControl
+					options={timeRangeOptions}
+					onClick={this.changeTimeRange}
+				/>
 				<div className={'split-container'}>
-					{!!this.state.stockNames.length && this.renderLineCharts()}
-					{!!this.state.stockNames.length && this.renderScatterChart()}
+					{!!this.state.stockNames.length && this.renderLeftContainer()}
+					{!!this.state.stockNames.length && this.renderRightContainer()}
 				</div>
 			</div>
 		);
 	}
 
-	private renderControls = () => {
-		return map(timeRangeOptions, (option) => (
-			<input
-				key={option}
-				onClick={this.changeTimeRange}
-				type={'button'}
-				value={option}
-			/>
-		));
-	}
+	private renderRightContainer = () => {
+		const {
+			selectedStockNames,
+			stockDataStore,
+			stockColumnHeaders,
+		} = this.state;
+		const valueIndex = stockColumnHeaders.findIndex((col) => col === 'close');
 
-	private renderScatterChart = () => {
 		return (
 			<div className={'right-container'}>
 				<div className={'scatter-chart-container'}>
 					<div id={scatterChartElementId} />
+					<StockCorrelation
+						elementId={scatterChartElementId}
+						height={400}
+						valueIndex={valueIndex}
+						width={400}
+						xData={stockDataStore[selectedStockNames[0]]}
+						xLabel={selectedStockNames[0]}
+						yData={stockDataStore[selectedStockNames[1]]}
+						yLabel={selectedStockNames[1]}
+					/>
 				</div>
 			</div>
 		);
 	}
 
-	private renderLineCharts = () => {
-		const chartZeroValue = find(
+	private renderLeftContainer = () => {
+		const {
+			selectedStockNames,
+			stockDataStore,
+			stockColumnHeaders,
+		} = this.state;
+
+		const xChartValue = _.find(
 			this.state.stockNames,
-			(nameOption) => nameOption.value === this.state.chartZeroName
+			(nameOption) => nameOption.value === this.state.selectedStockNames[0]
 		);
-		const chartOneValue = find(
+		const yChartValue = _.find(
 			this.state.stockNames,
-			(nameOption) => nameOption.value === this.state.chartOneName
+			(nameOption) => nameOption.value === this.state.selectedStockNames[1]
 		);
+		const valueIndex = stockColumnHeaders.findIndex((col) => col === 'close');
+		const timeIndex = stockColumnHeaders.findIndex((col) => col === 'date');
+
 		return (
 			<div className={'left-container'}>
 				<div className={'line-chart-container'}>
 					<div className={'dropdown'}>
-					<Select
-						maxMenuHeight={200}
-						onChange={this.changeChartZero}
-						options={this.state.stockNames}
-						value={chartZeroValue}
-					/>
+						<Select
+							maxMenuHeight={200}
+							onChange={this.changeXChartValue}
+							options={this.state.stockNames}
+							value={xChartValue}
+						/>
 					</div>
-					<div id={lineChartElementIds[0]} />
+					<StockTimeSeries
+						data={stockDataStore[selectedStockNames[0]]}
+						elementId={lineChartElementIds[0]}
+						height={200}
+						timeIndex={timeIndex}
+						valueIndex={valueIndex}
+						width={500}
+					/>
 				</div>
 				<div className={'line-chart-container'}>
 					<div className={'dropdown'}>
-					<Select
-						maxMenuHeight={200}
-						onChange={this.changeChartOne}
-						options={this.state.stockNames}
-						value={chartOneValue}
-					/>
+						<Select
+							maxMenuHeight={200}
+							onChange={this.changeYChartValue}
+							options={this.state.stockNames}
+							value={yChartValue}
+						/>
 					</div>
-					<div id={lineChartElementIds[1]} />
+					<StockTimeSeries
+						data={stockDataStore[selectedStockNames[1]]}
+						elementId={lineChartElementIds[1]}
+						height={200}
+						timeIndex={timeIndex}
+						valueIndex={valueIndex}
+						width={500}
+					/>
 				</div>
 			</div>
 		);
 	}
 
-	private fetchStockNames = () => {
-		fetch('/sp/names').then(
-			(res) => res.json(),
-			(err) => { console.log(err); }
-		).then(
-			(names: string[]) => {
-				const stockNames: ISelectOption[] = map(
-					names,
-					(name) => ({
-						label: name,
-						value: name,
-					})
-				);
-
-				this.setState({
-					stockNames,
-				}, () => {
-					this.fetchStockData();
-				});
-			}
-		);
+	private updateStockData = async (): Promise<void> => {
+		this.setState(await fetchStockData(this.state.selectedStockNames));
 	}
 
-	private fetchStockData = async (): Promise<void> => {
-		if (!this.state.chartZeroName || !this.state.chartOneName) {
-			return;
-		}
+	private changeXChartValue = ({value}: ISelectOption): void => {
+		const selectedStockNames = this.state.selectedStockNames.slice();
+		selectedStockNames[0] = value;
 
-		await fetch(`/sp/data?names=${this.state.chartZeroName},${this.state.chartOneName}`).then(
-			(res) => res.json(),
-			(err) => { console.log(err); }
-		).then(
-			({ columnHeaders, rows }: IRawStockData) => {
-				if (!this.state.chartZeroName || !this.state.chartOneName) {
-					return;
-				}
-
-				const groupZeroData = {
-					columnHeaders,
-					rows: filter(rows, (row) => some(row, (d) => d === this.state.chartZeroName)),
-				};
-				const groupOneData = {
-					columnHeaders,
-					rows: filter(rows, (row) => some(row, (d) => d === this.state.chartOneName)),
-				};
-
-				forEach(
-					[groupZeroData, groupOneData],
-					(groupData, index) => {
-						lineChart({
-							data: groupData,
-							elementId: lineChartElementIds[index],
-							height: 200,
-							width: 500,
-						});
-					}
-				);
-
-				const scatterData = zip(
-					map(groupZeroData.rows, (row) => Number(row[0])),
-					map(groupOneData.rows, (row) => Number(row[0]))
-				);
-
-				scatterChart({
-					data: scatterData,
-					elementId: scatterChartElementId,
-					height: 400,
-					width: 400,
-					xLabel: this.state.chartZeroName,
-					yLabel: this.state.chartOneName,
-				});
-			}
-		);
+		this.setState({ selectedStockNames }, this.updateStockData);
 	}
 
-	private changeChartZero = ({value}: ISelectOption) => {
-		this.setState({ chartZeroName: value }, () => {
-			this.fetchStockData();
-		});
+	private changeYChartValue = ({value}: ISelectOption): void => {
+		const selectedStockNames = this.state.selectedStockNames.slice();
+		selectedStockNames[1] = value;
+
+		this.setState({ selectedStockNames }, this.updateStockData);
 	}
 
-	private changeChartOne = ({value}: ISelectOption) => {
-		this.setState({ chartOneName: value }, () => {
-			this.fetchStockData();
-		});
-	}
-
-	private changeTimeRange = (event: any) => {
+	private changeTimeRange = (event: any): void => {
 		this.setState({
 			selectedTimeRangeOption: event.target.value,
 		});

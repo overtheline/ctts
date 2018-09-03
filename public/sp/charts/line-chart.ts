@@ -1,32 +1,15 @@
 import * as d3 from 'd3';
-import {
-	findIndex,
-	map,
-} from 'lodash';
 
-import { IRawStockData } from '../app';
+import { parseDateString } from '../utils';
 import './line-chart-styles.css';
 
 export interface ILineChartConfig {
 	elementId: string;
-	data: IRawStockData;
+	data: string[][];
 	height?: number;
+	timeIndex: number;
+	valueIndex: number;
 	width?: number;
-}
-
-function parseDateString(dateString: string): string {
-	const [year, month, day]: number[] = map(dateString.split('-'), (d) => Number(d));
-
-	const dateObj = new Date(year, month - 1, day);
-
-	return dateObj.toDateString();
-}
-
-function parseDateTime(dateString: string): number {
-	const [year, month, day]: number[] = map(dateString.split('-'), (d) => Number(d));
-	const dateObj = new Date(year, month - 1, day);
-
-	return dateObj.getTime();
 }
 
 export function lineChart(config: ILineChartConfig) {
@@ -34,18 +17,15 @@ export function lineChart(config: ILineChartConfig) {
 		elementId,
 		data,
 		height = 500,
+		timeIndex,
+		valueIndex,
 		width = 800,
 	} = config;
 
-	const closeIndex = findIndex(data.columnHeaders, (d) => d === 'close');
-	const dateIndex = findIndex(data.columnHeaders, (d) => d === 'date');
-	const parsedData = map(
-		data.rows.sort((a, b) => parseDateTime(a[dateIndex]) - parseDateTime(b[dateIndex])),
-		(row) => [
-			parseDateString(row[dateIndex]),
-			row[closeIndex],
-		]
-	);
+	const parsedData = data.map((row) => ({
+		date: parseDateString(row[timeIndex]),
+		value: Number(row[valueIndex]),
+	}));
 
 	d3.select(`#${elementId} svg`).remove();
 	const svg = d3.select(`#${elementId}`).append('svg');
@@ -76,10 +56,10 @@ export function lineChart(config: ILineChartConfig) {
 			.x((d: any) => xScale(d[0]))
 			.y((d: any) => yScale(d[1]));
 
-	const [xMin = 0, xMax = 1] = d3.extent(parsedData, (d) => parseTime(d[0]));
+	const [xMin = 0, xMax = 1] = d3.extent(parsedData, (d) => parseTime(d.date));
 	xScale.domain([xMin, xMax]);
 
-	const [yMin = 0, yMax = 1] = d3.extent(parsedData, (d) => Number(d[1]));
+	const [yMin = 0, yMax = 1] = d3.extent(parsedData, (d) => Number(d.value));
 	yScale.domain([yMin, yMax]);
 
 	g.append('g')
@@ -99,7 +79,7 @@ export function lineChart(config: ILineChartConfig) {
 			.text('Price ($)');
 
 	g.append('path')
-			.datum(map(parsedData, (d) => [parseTime(d[0]), Number(d[1])]))
+			.datum(parsedData.map((d) => [parseTime(d.date), Number(d.value)]))
 			.attr('fill', 'none')
 			.attr('stroke', 'steelblue')
 			.attr('stroke-linejoin', 'round')

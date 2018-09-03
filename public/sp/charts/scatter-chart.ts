@@ -1,30 +1,35 @@
 import * as d3 from 'd3';
 import {
-	map,
-} from 'lodash';
-import {
 	round,
 } from 'mathjs';
 import SimpleLinearRegression from 'ml-regression-simple-linear';
 
 export interface IScatterChartConfig {
 	elementId: string;
-	data: Array<[number | undefined, number | undefined]>;
-	height?: number;
-	width?: number;
+	height: number;
+	valueIndex: number;
+	width: number;
+	xData: string[][];
 	xLabel: string;
+	yData: string[][];
 	yLabel: string;
 }
 
 export function scatterChart(config: IScatterChartConfig) {
 	const {
 		elementId,
-		data,
 		height = 500,
+		valueIndex,
 		width = 800,
+		xData,
 		xLabel,
+		yData,
 		yLabel,
 	} = config;
+
+	const parsedXData = xData.map((row) => Number(row[valueIndex]));
+	const parsedYData = yData.map((row) => Number(row[valueIndex]));
+	const parsedData = d3.zip(parsedXData, parsedYData);
 
 	d3.select(`#${elementId} svg`).remove();
 	const svg = d3.select(`#${elementId}`).append('svg');
@@ -49,20 +54,20 @@ export function scatterChart(config: IScatterChartConfig) {
 	const yScale = d3.scaleLinear()
 		.range([chartHeight, 0]);
 
-	const [xMin = 0, xMax = 1] = d3.extent(data, (d) => d[0]);
+	const [xMin = 0, xMax = 1] = d3.extent(parsedData, (d) => d[0]);
 	xScale.domain([xMin, xMax]);
 
-	const [yMin = 0, yMax = 1] = d3.extent(data, (d) => d[1]);
+	const [yMin = 0, yMax = 1] = d3.extent(parsedData, (d) => d[1]);
 	yScale.domain([yMin, yMax]);
 
 	// get flat data: X, Y
-	const X = map(data, (d) => Number(d[0]));
-	const Y = map(data, (d) => Number(d[1]));
+	const X = parsedData.map((d) => Number(d[0]));
+	const Y = parsedData.map((d) => Number(d[1]));
 
 	// compute Pearson correlation
-	const XY = map(X, (x, i) =>  x * Y[i]);
-	const muX2 = d3.mean(map(X, (x) => x * x)) || 0;
-	const muY2 = d3.mean(map(Y, (y) => y * y)) || 0;
+	const XY = X.map((x, i) =>  x * Y[i]);
+	const muX2 = d3.mean(X.map((x) => x * x)) || 0;
+	const muY2 = d3.mean(Y.map((y) => y * y)) || 0;
 	const muX = d3.mean(X) || 0;
 	const muY = d3.mean(Y) || 0;
 	const muXY = d3.mean(XY) || 0;
@@ -70,8 +75,8 @@ export function scatterChart(config: IScatterChartConfig) {
 
 	// compute linear regression
 	const regression = new SimpleLinearRegression(
-		map(data, (d) => d[0]),
-		map(data, (d) => d[1])
+		parsedData.map((d) => d[0]),
+		parsedData.map((d) => d[1])
 	);
 	const x0 = xMin;
 	const x1 = xMax;
@@ -124,7 +129,7 @@ export function scatterChart(config: IScatterChartConfig) {
 			.text(`${yLabel}`);
 
 	g.selectAll('.dot')
-			.data(data)
+			.data(parsedData)
 		.enter().append('circle')
 			.attr('class', 'dot')
 			.attr('r', 1.5)
