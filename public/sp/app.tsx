@@ -99,7 +99,6 @@ export default class StockApp extends React.Component<any, IState> {
 		return (
 			<div className={'right-container'}>
 				<div className={'scatter-chart-container'}>
-					<div id={scatterChartElementId} />
 					<StockCorrelation
 						elementId={scatterChartElementId}
 						height={400}
