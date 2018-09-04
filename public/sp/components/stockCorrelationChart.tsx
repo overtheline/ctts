@@ -5,6 +5,8 @@ import { scatterChart } from '../charts/scatter-chart';
 export interface IStockCorrelationProps {
 	elementId: string;
 	height: number;
+	timeIndex: number;
+	timeRangeOption: string;
 	valueIndex: number;
 	width: number;
 	xData: string[][];

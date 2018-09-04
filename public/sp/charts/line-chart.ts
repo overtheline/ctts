@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import { parseDateString } from '../utils';
+import { parseDateString, timeOptionFilter } from '../utils';
 import './line-chart-styles.css';
 
 export interface ILineChartConfig {
@@ -8,6 +8,7 @@ export interface ILineChartConfig {
 	data: string[][];
 	height?: number;
 	timeIndex: number;
+	timeRangeOption: string;
 	valueIndex: number;
 	width?: number;
 }
@@ -18,11 +19,12 @@ export function lineChart(config: ILineChartConfig) {
 		data,
 		height = 500,
 		timeIndex,
+		timeRangeOption,
 		valueIndex,
 		width = 800,
 	} = config;
 
-	const parsedData = data.map((row) => ({
+	const parsedData = timeOptionFilter(timeRangeOption, data, timeIndex).map((row) => ({
 		date: parseDateString(row[timeIndex]),
 		value: Number(row[valueIndex]),
 	}));
@@ -64,7 +66,7 @@ export function lineChart(config: ILineChartConfig) {
 
 	g.append('g')
 			.attr('transform', `translate(0,${chartHeight})`)
-			.call(d3.axisBottom(xScale))
+			.call(d3.axisBottom(xScale).ticks(6))
 		.select('.domain')
 			.remove();
 

@@ -7,6 +7,7 @@ export interface IStockTimeSeriesProps {
 	elementId: string;
 	height: number;
 	timeIndex: number;
+	timeRangeOption: string;
 	valueIndex: number;
 	width: number;
 }

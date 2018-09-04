@@ -4,9 +4,13 @@ import {
 } from 'mathjs';
 import SimpleLinearRegression from 'ml-regression-simple-linear';
 
+import { timeOptionFilter } from '../utils';
+
 export interface IScatterChartConfig {
 	elementId: string;
 	height: number;
+	timeIndex: number;
+	timeRangeOption: string;
 	valueIndex: number;
 	width: number;
 	xData: string[][];
@@ -19,6 +23,8 @@ export function scatterChart(config: IScatterChartConfig) {
 	const {
 		elementId,
 		height = 500,
+		timeIndex,
+		timeRangeOption,
 		valueIndex,
 		width = 800,
 		xData,
@@ -27,7 +33,7 @@ export function scatterChart(config: IScatterChartConfig) {
 		yLabel,
 	} = config;
 
-	const parsedXData = xData.map((row) => Number(row[valueIndex]));
+	const parsedXData = timeOptionFilter(timeRangeOption, xData, timeIndex).map((row) => Number(row[valueIndex]));
 	const parsedYData = yData.map((row) => Number(row[valueIndex]));
 	const parsedData = d3.zip(parsedXData, parsedYData);
 

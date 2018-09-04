@@ -26,7 +26,7 @@ export async function fetchStockData(names: string[]): Promise<{
 				(acc: {[key: string]: string[][]}, name) => {
 					acc[name] = rows
 						.filter((row) => row[nameIndex] === name)
-						.sort((a, b) => parseDateTime(a[dateIndex]) - parseDateTime(b[dateIndex]));
+						.sort((a, b) => parseDateTime(b[dateIndex]) - parseDateTime(a[dateIndex]));
 					return acc;
 				},
 				{}

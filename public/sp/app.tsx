@@ -49,6 +49,7 @@ const timeRangeOptions: string[] = [
 	'5yrs',
 	'1yr',
 	'6mo',
+	'1mo',
 ];
 
 export default class StockApp extends React.Component<any, IState> {
@@ -79,6 +80,7 @@ export default class StockApp extends React.Component<any, IState> {
 				<TimeRangeControl
 					options={timeRangeOptions}
 					onClick={this.changeTimeRange}
+					selectedTimeRangeOption={this.state.selectedTimeRangeOption}
 				/>
 				<div className={'split-container'}>
 					{!!this.state.stockNames.length && this.renderLeftContainer()}
@@ -91,10 +93,12 @@ export default class StockApp extends React.Component<any, IState> {
 	private renderRightContainer = () => {
 		const {
 			selectedStockNames,
+			selectedTimeRangeOption,
 			stockDataStore,
 			stockColumnHeaders,
 		} = this.state;
 		const valueIndex = stockColumnHeaders.findIndex((col) => col === 'close');
+		const timeIndex = stockColumnHeaders.findIndex((col) => col === 'date');
 
 		return (
 			<div className={'right-container'}>
@@ -102,6 +106,8 @@ export default class StockApp extends React.Component<any, IState> {
 					<StockCorrelation
 						elementId={scatterChartElementId}
 						height={400}
+						timeIndex={timeIndex}
+						timeRangeOption={selectedTimeRangeOption}
 						valueIndex={valueIndex}
 						width={400}
 						xData={stockDataStore[selectedStockNames[0]]}
@@ -117,8 +123,9 @@ export default class StockApp extends React.Component<any, IState> {
 	private renderLeftContainer = () => {
 		const {
 			selectedStockNames,
-			stockDataStore,
+			selectedTimeRangeOption,
 			stockColumnHeaders,
+			stockDataStore,
 		} = this.state;
 
 		const xChartValue = _.find(
@@ -148,6 +155,7 @@ export default class StockApp extends React.Component<any, IState> {
 						elementId={lineChartElementIds[0]}
 						height={200}
 						timeIndex={timeIndex}
+						timeRangeOption={selectedTimeRangeOption}
 						valueIndex={valueIndex}
 						width={500}
 					/>
@@ -166,6 +174,7 @@ export default class StockApp extends React.Component<any, IState> {
 						elementId={lineChartElementIds[1]}
 						height={200}
 						timeIndex={timeIndex}
+						timeRangeOption={selectedTimeRangeOption}
 						valueIndex={valueIndex}
 						width={500}
 					/>
