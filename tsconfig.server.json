@@ -3,8 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "files": [
-		"./server/index.ts",
-		"./services/db/index.ts"
+  "include": [
+		"./server/**/*",
+		"./services/**/*",
+		"./utils/**/*"
 	]
 }

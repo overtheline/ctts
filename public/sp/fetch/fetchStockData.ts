@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 
+import { parseDateTime } from '../../../utils/index';
 import {
 	IStockDataStore,
 } from '../app';
-import {parseDateTime} from '../utils';
 
 export async function fetchStockData(names: string[]): Promise<{
 	stockColumnHeaders: string[];

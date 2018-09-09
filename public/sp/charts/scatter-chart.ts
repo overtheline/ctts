@@ -4,6 +4,7 @@ import {
 } from 'mathjs';
 import SimpleLinearRegression from 'ml-regression-simple-linear';
 
+import { getCorrelation } from '../../../utils/correlation';
 import { timeOptionFilter } from '../utils';
 
 export interface IScatterChartConfig {
@@ -71,19 +72,10 @@ export function scatterChart(config: IScatterChartConfig) {
 	const Y = parsedData.map((d) => Number(d[1]));
 
 	// compute Pearson correlation
-	const XY = X.map((x, i) =>  x * Y[i]);
-	const muX2 = d3.mean(X.map((x) => x * x)) || 0;
-	const muY2 = d3.mean(Y.map((y) => y * y)) || 0;
-	const muX = d3.mean(X) || 0;
-	const muY = d3.mean(Y) || 0;
-	const muXY = d3.mean(XY) || 0;
-	const rho = (muXY - (muX * muY)) / (Math.sqrt(muX2 - (muX * muX)) * Math.sqrt(muY2 - (muY * muY)));
+	const rho = getCorrelation(X, Y);
 
 	// compute linear regression
-	const regression = new SimpleLinearRegression(
-		parsedData.map((d) => d[0]),
-		parsedData.map((d) => d[1])
-	);
+	const regression = new SimpleLinearRegression(X, Y);
 	const x0 = xMin;
 	const x1 = xMax;
 	const y0 = regression.predict(x0);

@@ -14,24 +14,36 @@ const columnHeaders = [
 ];
 
 export default async function getSPData(req: Request, res: Response): Promise<void> {
-	const db: Db = await getDbConnection();
 	const names: string[] = req.query.names.split(',');
 
-	db.collection('sp').find({ Name: { $in: names } }).toArray((err, result) => {
-		if (err) {
+	res.send(await fetchSPData(names));
+}
+
+export async function fetchSPData(names: string[]): Promise<{columnHeaders: string[], rows: string[][]}> {
+	const db: Db = await getDbConnection();
+
+	db.collection('sp')
+	.aggregate([{ $sort: {date: -1}}]);
+
+	return await db.collection('sp')
+	.find({ Name: { $in: names } })
+	.toArray()
+	.then(
+		(result) => {
+			const rows: string[][] = result.map(
+				(datum) => columnHeaders.map(
+					(col) => String(datum[col])
+				)
+			);
+
+			return {
+				columnHeaders,
+				rows,
+			};
+		},
+		(err) => {
 			console.log('get sp data error.', err);
-			res.send(err);
+			return err;
 		}
-
-		const rows: string[][] = result.map(
-			(datum) => columnHeaders.map(
-				(col) => String(datum[col])
-			)
-		);
-
-		res.send({
-			columnHeaders,
-			rows,
-		});
-	});
+	);
 }

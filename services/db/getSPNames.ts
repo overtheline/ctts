@@ -4,8 +4,11 @@ import { Db } from 'mongodb';
 import getDbConnection from './getDbConnection';
 
 export default async function getSPNames(req: Request, res: Response): Promise<void> {
-	const db: Db = await getDbConnection();
-	const names = await db.collection('sp').distinct('Name', {});
+	res.send(await fetchSPNames());
+}
 
-	res.send(names);
+export async function fetchSPNames(): Promise<string[]> {
+	const db: Db = await getDbConnection();
+
+	return await db.collection('sp').distinct('Name', {});
 }
