@@ -13,7 +13,7 @@ const sqrt = Math.sqrt;
 
 export function getCorrelation(X: number[], Y: number[]): number {
 	// check data sizes.
-	if (X.length !== Y.length) {
+	if (X.length !== Y.length || X.length === 0) {
 		return NaN;
 	}
 
