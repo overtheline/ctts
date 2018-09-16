@@ -9,6 +9,8 @@ import {
 } from './fetch';
 import './styles.css';
 
+import CorrelationTable from './components/correlationTable';
+
 export interface ISelectOption {
 	label: string;
 	value: string;
@@ -94,6 +96,11 @@ export default class StockApp extends React.Component<any, IState> {
 						stockColumnHeaders={stockColumnHeaders}
 						stockDataStore={stockDataStore}
 						stockNames={stockNames}
+				/>
+				<CorrelationTable
+					selectedTableData={[[1, 2, 3], [4, 5, 6], [7, 8, 9]]}
+					selectedTableNames={['a', 'b', 'c']}
+					stockNames={['a', 'b', 'c', 'd']}
 				/>
 			</div>
 		);

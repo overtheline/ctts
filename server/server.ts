@@ -9,6 +9,7 @@ import {
 	db,
 	graphs,
 	ml,
+	stock,
 } from '../services';
 
 class App {
@@ -17,6 +18,7 @@ class App {
 	private quoteDataRouter: Router;
 	private graphsDataRouter: Router;
 	private spDataRouter: Router;
+	private stockDataRouter: Router;
 
 	constructor() {
 		// initialize server app
@@ -27,6 +29,7 @@ class App {
 		this.quoteDataRouter = Router();
 		this.graphsDataRouter = Router();
 		this.spDataRouter = Router();
+		this.stockDataRouter = Router();
 
 		// setup server
 		this.setup();
@@ -46,6 +49,7 @@ class App {
 		this.app.use('/quotedata', this.quoteDataRouter);
 		this.app.use('/graphs', this.graphsDataRouter);
 		this.app.use('/sp', this.spDataRouter);
+		this.app.use('/stock', this.stockDataRouter);
 
 		// set up index.html route
 		this.app.get('/', (req, res) => {
@@ -65,6 +69,8 @@ class App {
 
 		this.spDataRouter.get('/names', db.getSPNames);
 		this.spDataRouter.get('/data', db.getSPData);
+
+		this.stockDataRouter.get('/correlation', stock.getCorrelations);
 	}
 }
 
