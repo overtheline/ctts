@@ -67,6 +67,7 @@ class App {
 		this.graphsDataRouter.get('/miserables', graphs.getMiserables);
 		this.graphsDataRouter.get('/randomGraph', graphs.getRandomGraph);
 
+		this.spDataRouter.get('/columnHeaders', db.getColumnHeaders);
 		this.spDataRouter.get('/names', db.getSPNames);
 		this.spDataRouter.get('/data', db.getSPData);
 

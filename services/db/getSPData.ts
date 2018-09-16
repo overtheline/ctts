@@ -13,33 +13,31 @@ const columnHeaders = [
 	'volume',
 ];
 
-export default async function getSPData(req: Request, res: Response): Promise<void> {
+export async function getSPData(req: Request, res: Response): Promise<void> {
 	const names: string[] = req.query.names.split(',');
 
 	res.send(await fetchSPData(names));
 }
 
-export async function fetchSPData(names: string[]): Promise<{columnHeaders: string[], rows: string[][]}> {
+export async function getColumnHeaders(req: Request, res: Response): Promise<void> {
+	res.send(columnHeaders);
+}
+
+export async function fetchSPData(names: string[]): Promise<string[][]> {
 	const db: Db = await getDbConnection();
 
-	db.collection('sp')
-	.aggregate([{ $sort: {date: -1}}]);
+	db.collection('sp').aggregate([{ $sort: {date: -1}}]);
 
 	return await db.collection('sp')
 	.find({ Name: { $in: names } })
 	.toArray()
 	.then(
 		(result) => {
-			const rows: string[][] = result.map(
+			return result.map(
 				(datum) => columnHeaders.map(
 					(col) => String(datum[col])
 				)
 			);
-
-			return {
-				columnHeaders,
-				rows,
-			};
 		},
 		(err) => {
 			console.log('get sp data error.', err);
