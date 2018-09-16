@@ -5,9 +5,11 @@ import TimeRangeControl from './components/timeRangeControl';
 import TwoStockCompare from './components/twoStockCompare';
 import {
 	fetchStockData,
-	fetchStockNames,
 } from './fetch';
 import './styles.css';
+import {
+	computeAppStateWithMetadata, computeAppStateWithStockData,
+} from './utils/updateAppState';
 
 import CorrelationTable from './components/correlationTable';
 
@@ -35,12 +37,31 @@ export interface IStockDatum {
 	volume: number;
 }
 
-export interface IState {
+export interface ITwoStockCompareSettings {
 	selectedStockNames: string[];
-	selectedTimeRangeOption: string;
+}
+
+export interface ICorrelationTableSettings {
+	selectedStockNames: string[];
+}
+
+export interface IMetadata {
 	stockColumnHeaders: string[];
+	stockNames: string[];
+}
+
+export interface IAppControlSettings {
+	selectedTimeRangeOption: string;
+}
+
+export interface IAppState {
+	appControlSettings: IAppControlSettings;
+	metadata: IMetadata;
+	moduleSettings: {
+		twoStockCompareSettings: ITwoStockCompareSettings;
+		correlationTableSettings: ICorrelationTableSettings;
+	};
 	stockDataStore: IStockDataStore;
-	stockNames: ISelectOption[];
 }
 
 const timeRangeOptions: string[] = [
@@ -50,26 +71,35 @@ const timeRangeOptions: string[] = [
 	'1mo',
 ];
 
-export default class StockApp extends React.Component<any, IState> {
+const itnitialAppState: IAppState = {
+	appControlSettings: {
+		selectedTimeRangeOption: timeRangeOptions[0],
+	},
+	metadata: {
+		stockColumnHeaders: [],
+		stockNames: [],
+	},
+	moduleSettings: {
+		correlationTableSettings: {
+			selectedStockNames: ['AAPL', 'MSFT'],
+		},
+		twoStockCompareSettings: {
+			selectedStockNames: ['AAPL', 'MSFT'],
+		},
+	},
+	stockDataStore: {},
+};
+
+export default class StockApp extends React.Component<any, IAppState> {
 	constructor(props: any) {
 		super(props);
 
 		// itnitial state
-		this.state = {
-			selectedStockNames: ['AAPL', 'MSFT'],
-			selectedTimeRangeOption: timeRangeOptions[0],
-			stockColumnHeaders: [],
-			stockDataStore: {},
-			stockNames: [],
-		};
+		this.state = itnitialAppState;
 	}
 
 	public async componentDidMount() {
-		const stockNames = await fetchStockNames();
-
-		this.setState({
-			stockNames,
-		}, this.updateStockData);
+		this.setState(await computeAppStateWithMetadata(this.state), this.updateStockData);
 	}
 
 	public render() {
@@ -107,10 +137,10 @@ export default class StockApp extends React.Component<any, IState> {
 	}
 
 	private updateStockData = async (): Promise<void> => {
-		this.setState(await fetchStockData(this.state.selectedStockNames));
+		this.setState(await computeAppStateWithStockData(this.state));
 	}
 
-	private updateSelectedStocks = (selectedStockNames: string[]) => {
+	private updateSelectedStocks = (selectedStockNames: string[]): void => {
 		this.setState({ selectedStockNames }, this.updateStockData);
 	}
 
