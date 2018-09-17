@@ -1,17 +1,15 @@
 import addQuote from './addQuote';
 import getAllIrisData from './getAllIrisData';
 import getQuotes from './getQuotes';
-import {
-	getColumnHeaders,
-	getSPData,
-} from './getSPData';
-import getSPNames from './getSPNames';
+import { requestSPColumnHeaders } from './spColumnHeaders';
+import { requestSPData } from './spData';
+import { requestSPNames } from './spNames';
 
 export {
 	addQuote,
 	getAllIrisData,
-	getColumnHeaders,
 	getQuotes,
-	getSPData,
-	getSPNames,
+	requestSPColumnHeaders,
+	requestSPData,
+	requestSPNames,
 };

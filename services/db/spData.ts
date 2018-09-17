@@ -2,27 +2,25 @@ import { Request, Response } from 'express';
 import { Db } from 'mongodb';
 
 import getDbConnection from './getDbConnection';
+import { columnHeaders } from './spColumnHeaders';
 
-const columnHeaders = [
-	'close',
-	'date',
-	'high',
-	'low',
-	'Name',
-	'open',
-	'volume',
-];
-
-export async function getSPData(req: Request, res: Response): Promise<void> {
+export async function requestSPData(req: Request, res: Response): Promise<void> {
 	const names: string[] = req.query.names.split(',');
 
 	res.send(await fetchSPData(names));
 }
 
-export async function getColumnHeaders(req: Request, res: Response): Promise<void> {
-	res.send(columnHeaders);
-}
-
+/**
+ * Use in conjunction with the Column Headers API.
+ * @param names An array of stock names(symbols).
+ *
+ * returns an array of rows of data indexed by column header index.
+ * [
+ * 	[...values],
+ * 	[...values],
+ * 	...
+ * ]
+ */
 export async function fetchSPData(names: string[]): Promise<string[][]> {
 	const db: Db = await getDbConnection();
 

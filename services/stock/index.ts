@@ -1,5 +1,5 @@
-import getCorrelations from './correlation';
+import { requestSPCorrelationMatrix } from './correlation';
 
 export {
-	getCorrelations,
+	requestSPCorrelationMatrix,
 };
