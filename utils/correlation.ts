@@ -1,5 +1,8 @@
 import * as d3 from 'd3';
 import * as _ from 'lodash';
+import { fetchSPData } from '../services/db/getSPData';
+import { fetchSPNames } from '../services/db/getSPNames';
+import { generateRandomMatrix } from './test-utils/generate-matrix';
 
 function square(x: number): number {
 	return x * x;
@@ -26,4 +29,23 @@ export function getCorrelation(X: number[], Y: number[]): number {
 	const rho = (EXY - (EX * EY)) / (sqrt(EX2 - square(EX)) * sqrt(EY2 - square(EY)));
 
 	return rho;
+}
+
+export function computeCorrelationMatrix(data: number[][]): number[][] {
+	return data.map((X, xIdx) => {
+		return data.map((Y, yIdx) => {
+			return computeCorrelation(X, Y);
+		});
+	});
+}
+
+async function main() {
+	const t0 = Date.now();
+	const stockNames = await fetchSPNames();
+	const stockData = await fetchSPData(stockNames.slice(0, 10));
+
+	const m = generateRandomMatrix(500, 500);
+	computeCorrelationMatrix(m);
+	const t1 = Date.now();
+	console.log(t1 - t0);
 }
