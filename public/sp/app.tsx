@@ -8,24 +8,13 @@ import {
 } from './fetch';
 import './styles.css';
 import {
-	computeAppStateWithMetadata, computeAppStateWithStockData,
+	computeAppStateWithCompareSettings,
+	computeAppStateWithCorrelationNames,
+	computeAppStateWithMetadata,
+	computeAppStateWithTimeRange,
 } from './utils/updateAppState';
 
 import CorrelationTable from './components/correlationTable';
-
-export interface ISelectOption {
-	label: string;
-	value: string;
-}
-
-export interface IRawStockData {
-	columnHeaders: string[];
-	rows: string[][];
-}
-
-export interface IStockDataStore {
-	[name: string]: string[][];
-}
 
 export interface IStockDatum {
 	close: number;
@@ -39,10 +28,17 @@ export interface IStockDatum {
 
 export interface ITwoStockCompareSettings {
 	selectedStockNames: string[];
+	stockData: string[][];
 }
 
 export interface ICorrelationTableSettings {
 	selectedStockNames: string[];
+	correlationMatrix: number[][];
+}
+
+export interface IModuleSettings {
+	twoStockCompareSettings: ITwoStockCompareSettings;
+	correlationTableSettings: ICorrelationTableSettings;
 }
 
 export interface IMetadata {
@@ -57,11 +53,7 @@ export interface IAppControlSettings {
 export interface IAppState {
 	appControlSettings: IAppControlSettings;
 	metadata: IMetadata;
-	moduleSettings: {
-		twoStockCompareSettings: ITwoStockCompareSettings;
-		correlationTableSettings: ICorrelationTableSettings;
-	};
-	stockDataStore: IStockDataStore;
+	moduleSettings: IModuleSettings;
 }
 
 const timeRangeOptions: string[] = [
@@ -81,13 +73,14 @@ const itnitialAppState: IAppState = {
 	},
 	moduleSettings: {
 		correlationTableSettings: {
-			selectedStockNames: ['AAPL', 'MSFT'],
+			correlationMatrix: [],
+			selectedStockNames: ['AAPL', 'MSFT', 'AMZN', 'AMD', 'INTC'],
 		},
 		twoStockCompareSettings: {
 			selectedStockNames: ['AAPL', 'MSFT'],
+			stockData: [],
 		},
 	},
-	stockDataStore: {},
 };
 
 export default class StockApp extends React.Component<any, IAppState> {
@@ -99,16 +92,26 @@ export default class StockApp extends React.Component<any, IAppState> {
 	}
 
 	public async componentDidMount() {
-		this.setState(await computeAppStateWithMetadata(this.state), this.updateStockData);
+		this.setState(await computeAppStateWithMetadata(this.state));
+		this.setState(await computeAppStateWithCompareSettings(
+			this.state,
+			this.state.moduleSettings.twoStockCompareSettings.selectedStockNames
+		));
 	}
 
 	public render() {
 		const {
-			selectedStockNames,
-			selectedTimeRangeOption,
-			stockColumnHeaders,
-			stockDataStore,
-			stockNames,
+			appControlSettings: {
+				selectedTimeRangeOption,
+			},
+			metadata: {
+				stockColumnHeaders,
+				stockNames,
+			},
+			moduleSettings: {
+				twoStockCompareSettings,
+				correlationTableSettings,
+			},
 		} = this.state;
 
 		return (
@@ -116,17 +119,10 @@ export default class StockApp extends React.Component<any, IAppState> {
 				<h1>CTTS</h1>
 				<TimeRangeControl
 					options={timeRangeOptions}
-					onClick={this.changeTimeRange}
-					selectedTimeRangeOption={this.state.selectedTimeRangeOption}
+					onClick={this.updateSelectedTimeRange}
+					selectedTimeRangeOption={selectedTimeRangeOption}
 				/>
-				<TwoStockCompare
-						selectedStockNames={selectedStockNames}
-						selectedTimeRangeOption={selectedTimeRangeOption}
-						updateSelectedStocks={this.updateSelectedStocks}
-						stockColumnHeaders={stockColumnHeaders}
-						stockDataStore={stockDataStore}
-						stockNames={stockNames}
-				/>
+				{this.renderTwoStockCompare()}
 				<CorrelationTable
 					selectedTableData={[[1, 2, 3], [4, 5, 6], [7, 8, 9]]}
 					selectedTableNames={['a', 'b', 'c']}
@@ -136,17 +132,45 @@ export default class StockApp extends React.Component<any, IAppState> {
 		);
 	}
 
-	private updateStockData = async (): Promise<void> => {
-		this.setState(await computeAppStateWithStockData(this.state));
+	private renderTwoStockCompare = () => {
+		const {
+			appControlSettings: {
+				selectedTimeRangeOption,
+			},
+			metadata: {
+				stockColumnHeaders,
+				stockNames,
+			},
+			moduleSettings: {
+				twoStockCompareSettings,
+			},
+		} = this.state;
+
+		if (!twoStockCompareSettings.stockData.length) {
+			return null;
+		}
+
+		return (
+			<TwoStockCompare
+					selectedStockNames={twoStockCompareSettings.selectedStockNames}
+					selectedTimeRangeOption={selectedTimeRangeOption}
+					updateSelectedStocks={this.updateCompareSelectedStockNames}
+					stockColumnHeaders={stockColumnHeaders}
+					stockData={twoStockCompareSettings.stockData}
+					stockNames={stockNames}
+			/>
+		);
 	}
 
-	private updateSelectedStocks = (selectedStockNames: string[]): void => {
-		this.setState({ selectedStockNames }, this.updateStockData);
+	private updateCompareSelectedStockNames = async (selectedStockNames: string[]): Promise<void> => {
+		this.setState(await computeAppStateWithCompareSettings(this.state, selectedStockNames));
 	}
 
-	private changeTimeRange = (event: any): void => {
-		this.setState({
-			selectedTimeRangeOption: event.target.value,
-		});
+	private updateCorrelationSelectedStockNames = (selectedStockNames: string[]): void => {
+		this.setState(computeAppStateWithCorrelationNames(this.state, selectedStockNames));
+	}
+
+	private updateSelectedTimeRange = (event: any): void => {
+		this.setState(computeAppStateWithTimeRange(this.state, event.target.value));
 	}
 }

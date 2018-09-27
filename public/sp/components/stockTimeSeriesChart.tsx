@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { lineChart } from '../charts/line-chart';
 
-export interface IStockTimeSeriesProps {
+interface IProps {
 	data: string[][];
 	elementId: string;
 	height: number;
@@ -12,7 +12,7 @@ export interface IStockTimeSeriesProps {
 	width: number;
 }
 
-export default class StockTimeSeries extends React.Component<IStockTimeSeriesProps, any> {
+export default class StockTimeSeries extends React.Component<IProps, any> {
 	public componentDidMount() {
 		if (this.props.data) {
 			lineChart(this.props);

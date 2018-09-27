@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { scatterChart } from '../charts/scatter-chart';
 
-export interface IStockCorrelationProps {
+interface IProps {
 	elementId: string;
 	height: number;
 	timeIndex: number;
@@ -15,7 +15,7 @@ export interface IStockCorrelationProps {
 	yLabel: string;
 }
 
-export default class StockCorrelation extends React.Component<IStockCorrelationProps, any> {
+export default class StockCorrelation extends React.Component<IProps, any> {
 	public componentDidMount() {
 		if (this.props.xData && this.props.yData) {
 			scatterChart(this.props);

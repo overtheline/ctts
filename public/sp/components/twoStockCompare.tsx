@@ -2,29 +2,45 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import Select from 'react-select';
 
-import {
-	ISelectOption,
-	IStockDataStore,
-} from '../app';
+import { arrayValueIndex } from '../../../utils/array-value-index-map';
 import StockCorrelation from './stockCorrelationChart';
 import StockTimeSeries from './stockTimeSeriesChart';
 
-export interface ITwoStockCompareProps {
+export interface IProps {
 	selectedStockNames: string[];
 	selectedTimeRangeOption: string;
 	stockColumnHeaders: string[];
-	stockDataStore: IStockDataStore;
-	stockNames: ISelectOption[];
+	stockData: string[][];
+	stockNames: string[];
 	updateSelectedStocks: (selectedStockNames: string[]) => void;
+}
+
+interface ISelectOption {
+	value: string;
+	label: string;
+}
+
+interface IState {
+	stockNameOptions: ISelectOption[];
 }
 
 const lineChartElementIds = ['line-chart-0', 'line-chart-1'];
 const scatterChartElementId = 'scatter-chart-0';
 
-export default class TwoStockCompare extends React.Component<ITwoStockCompareProps, any> {
+export default class TwoStockCompare extends React.Component<IProps, IState> {
+	constructor(props: IProps) {
+		super(props);
+
+		this.state = {
+			stockNameOptions: props.stockNames.map((name) => ({ value: name, label: name })),
+		};
+	}
+
 	public render() {
 		if (!this.props.stockNames.length) {
-			return null;
+			return (
+				<div>Nothing to show here.</div>
+			);
 		}
 
 		return (
@@ -40,19 +56,27 @@ export default class TwoStockCompare extends React.Component<ITwoStockComparePro
 			selectedStockNames,
 			selectedTimeRangeOption,
 			stockColumnHeaders,
-			stockDataStore,
+			stockData,
 		} = this.props;
+		const {
+			stockNameOptions,
+		} = this.state;
 
-		const xChartValue = _.find(
-			this.props.stockNames,
+		const xOptionIdx = stockNameOptions.findIndex(
 			(nameOption) => nameOption.value === this.props.selectedStockNames[0]
 		);
-		const yChartValue = _.find(
-			this.props.stockNames,
+		const yOptionIdx = stockNameOptions.findIndex(
 			(nameOption) => nameOption.value === this.props.selectedStockNames[1]
 		);
-		const valueIndex = stockColumnHeaders.findIndex((col) => col === 'close');
-		const timeIndex = stockColumnHeaders.findIndex((col) => col === 'date');
+		const nameIdx = arrayValueIndex(stockColumnHeaders, 'Name');
+		const timeIdx = arrayValueIndex(stockColumnHeaders, 'date');
+		const valueIdx = arrayValueIndex(stockColumnHeaders, 'close');
+		const xChartData = stockData
+			.filter((datum) => datum[nameIdx] === selectedStockNames[0])
+			.map((datum) => [datum[timeIdx], datum[valueIdx]]);
+		const yChartData = stockData
+			.filter((datum) => datum[nameIdx] === selectedStockNames[1])
+			.map((datum) => [datum[timeIdx], datum[valueIdx]]);
 
 		return (
 			<div className={'left-container'}>
@@ -61,17 +85,17 @@ export default class TwoStockCompare extends React.Component<ITwoStockComparePro
 						<Select
 							maxMenuHeight={200}
 							onChange={this.changeXChartValue}
-							options={this.props.stockNames}
-							value={xChartValue}
+							options={stockNameOptions}
+							value={stockNameOptions[xOptionIdx]}
 						/>
 					</div>
 					<StockTimeSeries
-						data={stockDataStore[selectedStockNames[0]]}
+						data={xChartData}
 						elementId={lineChartElementIds[0]}
 						height={200}
-						timeIndex={timeIndex}
+						timeIndex={0}
 						timeRangeOption={selectedTimeRangeOption}
-						valueIndex={valueIndex}
+						valueIndex={1}
 						width={500}
 					/>
 				</div>
@@ -80,17 +104,17 @@ export default class TwoStockCompare extends React.Component<ITwoStockComparePro
 						<Select
 							maxMenuHeight={200}
 							onChange={this.changeYChartValue}
-							options={this.props.stockNames}
-							value={yChartValue}
+							options={stockNameOptions}
+							value={stockNameOptions[yOptionIdx]}
 						/>
 					</div>
 					<StockTimeSeries
-						data={stockDataStore[selectedStockNames[1]]}
+						data={yChartData}
 						elementId={lineChartElementIds[1]}
 						height={200}
-						timeIndex={timeIndex}
+						timeIndex={0}
 						timeRangeOption={selectedTimeRangeOption}
-						valueIndex={valueIndex}
+						valueIndex={1}
 						width={500}
 					/>
 				</div>
@@ -102,12 +126,19 @@ export default class TwoStockCompare extends React.Component<ITwoStockComparePro
 		const {
 			selectedStockNames,
 			selectedTimeRangeOption,
-			stockDataStore,
 			stockColumnHeaders,
+			stockData,
 		} = this.props;
 
-		const valueIndex = stockColumnHeaders.findIndex((col) => col === 'close');
-		const timeIndex = stockColumnHeaders.findIndex((col) => col === 'date');
+		const nameIdx = arrayValueIndex(stockColumnHeaders, 'Name');
+		const timeIdx = stockColumnHeaders.findIndex((col) => col === 'date');
+		const valueIdx = stockColumnHeaders.findIndex((col) => col === 'close');
+		const xData = stockData
+			.filter((datum) => datum[nameIdx] === selectedStockNames[0])
+			.map((datum) => [datum[timeIdx], datum[valueIdx]]);
+		const yData = stockData
+			.filter((datum) => datum[nameIdx] === selectedStockNames[1])
+			.map((datum) => [datum[timeIdx], datum[valueIdx]]);
 
 		return (
 			<div className={'right-container'}>
@@ -115,13 +146,13 @@ export default class TwoStockCompare extends React.Component<ITwoStockComparePro
 					<StockCorrelation
 						elementId={scatterChartElementId}
 						height={400}
-						timeIndex={timeIndex}
+						timeIndex={0}
 						timeRangeOption={selectedTimeRangeOption}
-						valueIndex={valueIndex}
+						valueIndex={1}
 						width={400}
-						xData={stockDataStore[selectedStockNames[0]]}
+						xData={xData}
 						xLabel={selectedStockNames[0]}
-						yData={stockDataStore[selectedStockNames[1]]}
+						yData={yData}
 						yLabel={selectedStockNames[1]}
 					/>
 				</div>

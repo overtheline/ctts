@@ -21,8 +21,12 @@ export default class CorrelationTable extends React.Component<IProps, any> {
 		return (
 			<div>
 				<table>
-					{this.renderHeaderRow()}
-					{this.renderRows()}
+					<thead>
+						{this.renderHeaderRow()}
+					</thead>
+					<tbody>
+						{this.renderRows()}
+					</tbody>
 				</table>
 			</div>
 		);

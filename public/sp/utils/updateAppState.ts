@@ -1,5 +1,12 @@
 import * as _ from 'lodash';
-import { IAppState, IMetadata, IStockDataStore } from '../app';
+import {
+	IAppControlSettings,
+	IAppState,
+	ICorrelationTableSettings,
+	IMetadata,
+	IModuleSettings,
+	ITwoStockCompareSettings,
+} from '../app';
 import {
 	fetchStockColumnHeaders,
 	fetchStockData,
@@ -22,17 +29,36 @@ export async function computeAppStateWithMetadata(appState: IAppState): Promise<
 	return getNextAppState(appState, { metadata });
 }
 
-export async function computeAppStateWithStockData(appState: IAppState): Promise<IAppState> {
-	const {
-		moduleSettings: {
-			twoStockCompareSettings: {
-				selectedStockNames,
-			},
-		},
-	} = appState;
+export function computeAppStateWithTimeRange(appState: IAppState, selectedTimeRangeOption: string): IAppState {
+	const appControlSettings = getNextSubstate<IAppControlSettings>(
+		appState.appControlSettings,
+		{ selectedTimeRangeOption }
+	);
 
+	return getNextAppState(appState, { appControlSettings });
+}
+
+export async function computeAppStateWithCompareSettings(
+	appState: IAppState,
+	selectedStockNames: string[]
+): Promise<IAppState> {
 	const stockData = await fetchStockData(selectedStockNames);
-	const stockDataStore = getNextSubstate<IStockDataStore>(appState.stockDataStore, stockData);
 
-	return getNextAppState(appState, { stockDataStore });
+	const twoStockCompareSettings = getNextSubstate<ITwoStockCompareSettings>(
+		appState.moduleSettings.twoStockCompareSettings,
+		{ selectedStockNames, stockData }
+	);
+	const moduleSettings = getNextSubstate<IModuleSettings>(appState.moduleSettings, { twoStockCompareSettings });
+
+	return getNextAppState(appState, { moduleSettings });
+}
+
+export function computeAppStateWithCorrelationNames(appState: IAppState, selectedStockNames: string[]): IAppState {
+	const correlationTableSettings = getNextSubstate<ICorrelationTableSettings>(
+		appState.moduleSettings.correlationTableSettings,
+		{ selectedStockNames }
+	);
+	const moduleSettings = getNextSubstate<IModuleSettings>(appState.moduleSettings, { correlationTableSettings });
+
+	return getNextAppState(appState, { moduleSettings });
 }
