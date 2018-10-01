@@ -31,21 +31,21 @@ export function getCorrelation(X: number[], Y: number[]): number {
 	return rho;
 }
 
-export function computeCorrelationMatrix(data: number[][]): number[][] {
-	return data.map((X, xIdx) => {
-		return data.map((Y, yIdx) => {
-			return computeCorrelation(X, Y);
-		});
-	});
-}
+// export function computeCorrelationMatrix(data: number[][]): number[][] {
+// 	return data.map((X, xIdx) => {
+// 		return data.map((Y, yIdx) => {
+// 			return computeCorrelation(X, Y);
+// 		});
+// 	});
+// }
 
-async function main() {
-	const t0 = Date.now();
-	const stockNames = await fetchSPNames();
-	const stockData = await fetchSPData(stockNames.slice(0, 10));
+// async function main() {
+// 	const t0 = Date.now();
+// 	const stockNames = await fetchSPNames();
+// 	const stockData = await fetchSPData(stockNames.slice(0, 10));
 
-	const m = generateRandomMatrix(500, 500);
-	computeCorrelationMatrix(m);
-	const t1 = Date.now();
-	console.log(t1 - t0);
-}
+// 	const m = generateRandomMatrix(500, 500);
+// 	computeCorrelationMatrix(m);
+// 	const t1 = Date.now();
+// 	console.log(t1 - t0);
+// }
