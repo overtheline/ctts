@@ -58,8 +58,7 @@ class App {
 		this.quoteDataRouter.get('/getAllQuotes', db.getQuotes);
 		this.quoteDataRouter.get('/addQuote', db.addQuote);
 
-		this.irisDataRouter.get('/predictIris', ml.getIrisPrediction);
-		this.irisDataRouter.get('/irisData', db.getAllIrisData);
+		this.irisDataRouter.get('/irisFnn', ml.getIrisFnn);
 
 		this.graphsDataRouter.get('/miserables', graphs.getMiserables);
 		this.graphsDataRouter.get('/randomGraph', graphs.getRandomGraph);
