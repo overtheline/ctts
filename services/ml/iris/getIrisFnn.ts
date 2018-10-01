@@ -1,6 +1,8 @@
+import { Request, Response } from 'express';
 import * as FNN from 'ml-fnn';
 
 import { IRawIrisDatum } from '../../../types/irisTypes';
+import { shuffleArray } from '../../../utils/shuffle-array';
 import { fetchAllIrisData } from '../../db/getAllIrisData';
 
 export interface IFnnParameters {
@@ -35,8 +37,9 @@ export interface IFnnReport {
 }
 
 function prepareDatasets(dbData: IRawIrisDatum[]): IDatasets {
-	const trainingSetSize = Math.floor(dbData.length * 0.7);
-	const featureData = dbData.map(
+	const shuffledData = shuffleArray(dbData);
+	const trainingSetSize = Math.floor(shuffledData.length * 0.7);
+	const featureData = shuffledData.map(
 		({petalLength, petalWidth, sepalLength, sepalWidth}) => [
 			Number(petalLength),
 			Number(petalWidth),
@@ -45,7 +48,7 @@ function prepareDatasets(dbData: IRawIrisDatum[]): IDatasets {
 		]
 	);
 
-	const labelData = dbData.map(({type}) => type);
+	const labelData = shuffledData.map(({type}) => type);
 
 	return featureData.reduce(
 		(acc: IDatasets, feature, i) => {
@@ -97,13 +100,13 @@ function generateReport(parameters: IFnnParameters, datasets: IDatasets): IFnnRe
 const defaultFnnParameters = {
 	activation: 'tanh',
 	activationParam: 1,
-	hiddenLayers: [5],
-	iterations: 30000,
-	learningRate: 0.00005,
-	regularization: 0.005,
+	hiddenLayers: [10],
+	iterations: 50000,
+	learningRate: 0.001,
+	regularization: 0.01,
 };
 
-export default async function getIrisFnn(fnnParameters: IFnnParameters = defaultFnnParameters): Promise<IFnnReport> {
+export async function runIrisFnn(fnnParameters: IFnnParameters = defaultFnnParameters): Promise<IFnnReport> {
 	const dbData = await fetchAllIrisData();
 	const datasets = prepareDatasets(dbData);
 
@@ -112,4 +115,10 @@ export default async function getIrisFnn(fnnParameters: IFnnParameters = default
 	datasets.predictionResultSet.labels = fnn.predict(datasets.predictionResultSet.features);
 
 	return generateReport(fnnParameters, datasets);
+}
+
+export default async function getIrisPrediction(req: Request, res: Response): Promise<void> {
+	const result = await runIrisFnn();
+
+	res.json(result);
 }
