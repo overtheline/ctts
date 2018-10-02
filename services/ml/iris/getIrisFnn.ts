@@ -101,7 +101,7 @@ const defaultFnnParameters = {
 	activation: 'tanh',
 	activationParam: 1,
 	hiddenLayers: [10],
-	iterations: 50000,
+	iterations: 1000,
 	learningRate: 0.001,
 	regularization: 0.01,
 };
