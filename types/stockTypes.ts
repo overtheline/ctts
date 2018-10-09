@@ -1,4 +1,6 @@
-export interface IStockRow {
+import { Document } from 'mongoose';
+
+export interface IStockRow extends Document {
 	close: number;
 	date: string;
 	high: number;

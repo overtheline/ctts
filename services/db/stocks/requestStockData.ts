@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import {
 	connect,
 	connection,
-	Document,
 } from 'mongoose';
 
+import { IStockRow } from '../../../types/stockTypes';
 import { StockRow } from './model';
 
 export async function requestStockData(req: Request, res: Response): Promise<void> {
@@ -13,7 +13,7 @@ export async function requestStockData(req: Request, res: Response): Promise<voi
 	res.send(await fetchStockData(names));
 }
 
-export async function fetchStockData(names: string[]): Promise<Document[]> {
+export async function fetchStockData(names: string[]): Promise<IStockRow[]> {
 	connect('mongodb://localhost:27017/test');
 	const mongoosedb = connection;
 
