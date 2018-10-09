@@ -15,7 +15,3 @@ export const stockRowSchema = new Schema({
 export const stockNameSchema = new Schema({
 	name: String,
 });
-
-stockRowSchema.query.byName = function(name: string) {
-	return this.where({ name: new RegExp(name, 'i')});
-};
