@@ -18,6 +18,7 @@ class App {
 	private quoteDataRouter: Router;
 	private graphsDataRouter: Router;
 	private spDataRouter: Router;
+	private stocksDataRouter: Router;
 
 	constructor() {
 		// initialize server app
@@ -28,6 +29,7 @@ class App {
 		this.quoteDataRouter = Router();
 		this.graphsDataRouter = Router();
 		this.spDataRouter = Router();
+		this.stocksDataRouter = Router();
 
 		// setup server
 		this.setup();
@@ -47,6 +49,7 @@ class App {
 		this.app.use('/quotedata', this.quoteDataRouter);
 		this.app.use('/graphs', this.graphsDataRouter);
 		this.app.use('/sp', this.spDataRouter);
+		this.app.use('/stocks', this.stocksDataRouter);
 
 		// set up index.html route
 		this.app.get('/', (req, res) => {
@@ -67,6 +70,8 @@ class App {
 		this.spDataRouter.get('/names', db.requestSPNames);
 		this.spDataRouter.get('/data', db.requestSPData);
 		this.spDataRouter.get('/correlation', stock.requestSPCorrelationMatrix);
+
+		this.stocksDataRouter.get('/data', db.requestStockData);
 	}
 }
 
