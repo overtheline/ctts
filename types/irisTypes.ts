@@ -1,3 +1,5 @@
+import { Document } from 'mongoose';
+
 export interface IRawIrisDatum {
 	petalLength: string;
 	petalWidth: string;
@@ -6,7 +8,7 @@ export interface IRawIrisDatum {
 	type: string;
 }
 
-export interface IIrisDatum {
+export interface IIrisDatum extends Document {
 	petalLength: number;
 	petalWidth: number;
 	sepalLength: number;
