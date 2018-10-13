@@ -7,7 +7,7 @@ import {
 	connection,
 } from 'mongoose';
 
-import { StockRow } from '../stocks/model';
+import { StockRow } from '../model';
 
 let db: Db;
 

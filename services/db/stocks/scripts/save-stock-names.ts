@@ -3,8 +3,8 @@ import {
 	connection,
 } from 'mongoose';
 
-import { fetchSPNames } from '../spNames';
-import { StockName } from '../stocks/model';
+import { fetchSPNames } from '../../spNames';
+import { StockName } from '../../stocks/model';
 
 connect('mongodb://localhost:27017/test');
 
