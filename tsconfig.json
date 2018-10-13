@@ -3,7 +3,7 @@
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
 		"jsx": "react",
-		"lib": ["es6", "dom"],
+		"lib": ["es7", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -11,7 +11,8 @@
     "noImplicitThis": true,
     "sourceMap": true,
     "strictNullChecks": true,
-    "target": "es6"
+		"target": "es6",
+		"typeRoots": ["node_modules/@types", "./types"]
   },
   "exclude": [
     "node_modules"
