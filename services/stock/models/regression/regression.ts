@@ -1,7 +1,7 @@
 import * as SimpleLinearRegression from 'ml-regression-simple-linear';
 
 import { IStockRow } from '../../../../types/stockTypes';
-import { fetchStockData } from '../../../db/stocks/requestStockData';
+import { queryStocksData } from '../../../db/stocks/queryStocksData';
 
 interface IDataD extends IStockRow {
 	day: number;
@@ -77,7 +77,7 @@ export interface IRegressionFeature {
 
 export async function buildRegressionFeatures(name: string) {
 	// fetching plain data from db
-	const dataA = await fetchStockData([name]);
+	const dataA = await queryStocksData([name]);
 
 	// add some metadata about dates
 	const dataB = dataA.map((datum) => {

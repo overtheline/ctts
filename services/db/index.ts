@@ -4,7 +4,6 @@ import getQuotes from './getQuotes';
 import { requestSPColumnHeaders } from './spColumnHeaders';
 import { requestSPData } from './spData';
 import { requestSPNames } from './spNames';
-import { requestStockData } from './stocks/requestStockData';
 
 export {
 	addQuote,
@@ -13,5 +12,4 @@ export {
 	requestSPColumnHeaders,
 	requestSPData,
 	requestSPNames,
-	requestStockData,
 };

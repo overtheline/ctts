@@ -11,6 +11,7 @@ import {
 	ml,
 	stock,
 } from '../services';
+import { requestStocksData } from './routes/stocksRoutes/requestStocksData';
 
 class App {
 	public app: Application;
@@ -71,7 +72,7 @@ class App {
 		this.spDataRouter.get('/data', db.requestSPData);
 		this.spDataRouter.get('/correlation', stock.requestSPCorrelationMatrix);
 
-		this.stocksDataRouter.get('/data', db.requestStockData);
+		this.stocksDataRouter.get('/data', requestStocksData);
 	}
 }
 
