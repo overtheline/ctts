@@ -12,6 +12,7 @@ module.exports = {
 		index: './public/landing/index.tsx',
 		iris: './public/iris/index.tsx',
 		sp: './public/sp/index.tsx',
+		stocks: './public/stocks/index.tsx',
 	},
 	devtool: 'inline-source-map',
 	plugins: [
@@ -50,6 +51,13 @@ module.exports = {
 			template: 'public/index.html',
 			chunks: ['sp'],
 			filename: 'sp-charts.html',
+		}),
+		new HtmlWebpackPlugin({
+			title: 'Stocks',
+			inject: 'body',
+			template: 'public/index.html',
+			chunks: ['stocks'],
+			filename: 'stocks.html',
 		}),
 		new webpack.DefinePlugin({
       'process.env': {
