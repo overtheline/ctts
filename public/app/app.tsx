@@ -1,6 +1,5 @@
 import { bindAll } from 'lodash';
 import * as React from 'react';
-import { runInThisContext } from 'vm';
 
 interface IState {
 	name: string;
