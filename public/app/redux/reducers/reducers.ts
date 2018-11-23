@@ -28,7 +28,7 @@ interface IState {
 	selectedName: string;
 }
 
-type Actions = IReceivePosts | IRequestPosts | ISelectName;
+type Actions = IReceivePosts & IRequestPosts & ISelectName;
 
 function selectedName(state: string, action: ISelectName): string {
 	switch (action.type) {
@@ -48,7 +48,7 @@ function quotes(state: IQuotes, action: Actions): IQuotes {
 				{
 					[action.name]: Object.assign<{}, INameState, Partial<INameState>>({}, state[action.name], {
 						isFetching: false,
-						items: action.quote,
+						items: action.quotes,
 					}),
 				}
 			);
