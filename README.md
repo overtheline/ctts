@@ -23,7 +23,7 @@ npm install
 
 To run:
 ```text
-npm run mongod
+mongod
 npm run tsc
 npm run server
 npm run build
